@@ -1,0 +1,6 @@
+[workspace]
+name="solve-check"
+channels=["conda-forge","bioconda"]
+platforms=["linux-64"]
+[dependencies]
+"seqtk" = "amr-gene-screening"

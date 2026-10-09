@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Macrosynteny Viz</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="macrosynteny.css">
+</head>
+<body>
+    <div id="toaster-container"></div>
+    
+    <button id="toggle-sidebar-left" class="toggle-tab left">⇇</button>
+    <div id="sidebar-left" class="sidebar">
+        <div class="sidebar-header">
+            <strong>Configuration</strong>
+        </div>
+        <div class="sidebar-content">
+            <div class="config-section">
+                <div class="config-title">Data Source</div>
+                <input type="file" id="tsv-upload" accept=".tsv,.txt" style="display: none;">
+                <div style="display: flex; gap: 8px; flex-direction: column;">
+                    <button class="config-btn" onclick="document.getElementById('tsv-upload').click()" style="padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 500;">
+                        📂 Load .links.tsv
+                    </button>
+                    <div class="control-row" style="margin-top: 8px;">
+                        <label>Reference</label>
+                        <select id="ref-selector" style="flex: 2; padding: 4px; font-size: 11px;"></select>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <button id="btn-ref-color" class="config-btn" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f1f5f9; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 500;">
+                            🎨 Ref-Color
+                        </button>
+                        <button id="btn-reset-focus" class="config-btn" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0; background: #fffcf0; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 500;">
+                            🎯 Reset Focus
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <div class="config-title">Genomes</div>
+                <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+                    <button id="btn-genomes-all" class="ref-btn" style="flex: 1; padding: 4px;">Select All</button>
+                    <button id="btn-genomes-none" class="ref-btn" style="flex: 1; padding: 4px;">Clear All</button>
+                </div>
+                <div id="genome-list" class="genome-list"></div>
+            </div>
+
+            <div class="config-section">
+                <div class="config-title">Layout Configuration</div>
+                <div class="control-row">
+                    <label>Show Labels</label>
+                    <input type="checkbox" id="cfg-showLabels" checked>
+                </div>
+                <div class="control-row">
+                    <label>Free-form Alignment</label>
+                    <input type="checkbox" id="cfg-freeFormAlignment">
+                </div>
+                <div class="control-row-complex">
+                    <label>Track Spacing</label>
+                    <div class="complex-input">
+                        <input type="range" id="cfg-trackSpacing-slider" min="50" max="400" value="180">
+                        <input type="number" id="cfg-trackSpacing-text" value="180" style="width: 60px;">
+                    </div>
+                </div>
+                <div class="control-row-complex">
+                    <label>Label Size</label>
+                    <div class="complex-input">
+                        <input type="range" id="cfg-labelSize-slider" min="6" max="30" value="11">
+                        <input type="number" id="cfg-labelSize-text" value="11" style="width: 60px;">
+                    </div>
+                </div>
+                <div class="control-row-complex">
+                    <label>Chrom Margin</label>
+                    <div class="complex-input">
+                        <input type="range" id="cfg-chromMargin-slider" min="0" max="200" value="20">
+                        <input type="number" id="cfg-chromMargin-text" value="20" style="width: 60px;">
+                    </div>
+                </div>
+                <div class="control-row-complex">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="margin: 0; font-weight: 500;">Scale Bar Size</label>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="cfg-showScaleBar" checked style="cursor: pointer; width: auto;">
+                            <span style="font-size: 11px; color: #64748b; font-weight: 500;">Show</span>
+                        </div>
+                    </div>
+                    <div class="complex-input">
+                        <input type="range" id="cfg-scaleBarMb-slider" min="0.1" max="10" step="0.1" value="1">
+                        <input type="number" id="cfg-scaleBarMb-text" value="1" step="0.1" style="width: 60px;">
+                        <span style="font-size: 12px; color: #64748b;">Mb</span>
+                    </div>
+                </div>
+                <div class="control-row-complex">
+                    <label>Horizontal Zoom</label>
+                    <div class="complex-input">
+                        <input type="range" id="cfg-zoom-slider" min="0.1" max="1" step="0.01" value="1">
+                        <input type="number" id="cfg-zoom-text" step="0.01" value="1" style="width: 70px;">
+                        <span style="font-size: 12px; color: #64748b;">x</span>
+                    </div>
+                </div>
+                <div class="control-row-complex">
+                    <label>Chrom Outline</label>
+                    <div class="complex-input">
+                        <input type="range" id="cfg-chromStrokeWidth-slider" min="0" max="5" step="0.5" value="1">
+                        <input type="number" id="cfg-chromStrokeWidth-text" value="1" step="0.5" style="width: 60px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <div class="config-title">Interaction</div>
+                <p style="font-size: 11px; color: #64748b; line-height: 1.6;">
+                    • <b>Invert</b>: Double-click chrom.<br>
+                    • <b>Focus</b>: Right-click chrom.<br>
+                    • <b>Reset Focus</b>: Click button above.<br>
+                    • <b>Reorder</b>: Drag labels or bars.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="main">
+        <div id="tooltip"></div>
+        <div id="viz"></div>
+    </div>
+
+    <button id="toggle-sidebar-right" class="toggle-tab right">⇉</button>
+    <div id="sidebar-right" class="sidebar">
+        <div class="sidebar-header">
+            <strong>Chrom Focus List</strong>
+        </div>
+        <div class="sidebar-content">
+            <div class="config-section">
+                <div class="config-title">Filter by Synteny Size</div>
+                <p style="font-size: 10px; color: #64748b; margin-bottom: 8px;">Hide chroms with total synteny < threshold (bp).</p>
+                <div class="control-row" style="flex-wrap: wrap; gap: 4px;">
+                    <input type="range" id="cfg-minSynteny-slider" min="0" max="10000000" step="10000" value="0" style="flex: 1; min-width: 100px;">
+                    <input type="number" id="cfg-minSynteny-text" value="0" step="10000" style="width: 80px;">
+                </div>
+            </div>
+
+            <div class="config-section">
+                <div class="config-title">Reference Chromosomes</div>
+                <div id="chrom-focus-list" class="genome-list">
+                    <p style="font-size: 11px; color: #94a3b8;">Select a reference to see chromosomes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="export-panel">
+        <span class="export-label">Export</span>
+        <button id="btn-export-svg" class="export-btn">
+            📄 SVG
+        </button>
+        <button id="btn-export-png" class="export-btn primary">
+            🖼️ PNG (300 DPI)
+        </button>
+        <button id="btn-export-html" class="export-btn" style="background: #f0fdf4; border-color: #bbf7d0; color: #166534;">
+            🌐 Interactive HTML
+        </button>
+    </div>
+
+    <script type="module">
+        import { SyntenyViz } from './src/index.js';
+        import { Exporter } from './src/utils/Exporter.js';
+        
+        class SidebarController {
+            install(viz) {
+                this.viz = viz;
+                this._setupGenomes();
+                this._setupControls();
+                this._setupSidebars();
+                this._setupData();
+                this._setupExport();
+
+                viz.on('dataLoaded', () => {
+                    this.updateRefSelector();
+                    this.updateFocusList();
+                });
+                viz.on('focusChanged', () => {
+                    this.updateFocusList();
+                });
+                viz.on('refChanged', () => {
+                    this.updateRefSelector();
+                    this.updateFocusList();
+                    this.updateGenomeList();
+                });
+                viz.on('toast', (msg) => {
+                    this.showToast(msg);
+                });
+                viz.on('scaleChanged', (scale) => {
+                    d3.select("#cfg-zoom-slider").property("value", viz.config.zoom);
+                });
+                viz.on('spacingChanged', (spacing) => {
+                    d3.select("#cfg-trackSpacing-slider").property("value", spacing);
+                    d3.select("#cfg-trackSpacing-text").property("value", Math.round(spacing));
+                });
+                viz.on('afterRender', () => {
+                    this.updateGenomeList();
+                });
+            }
+
+            _setupData() {
+                d3.select("#tsv-upload").on("change", (e) => {
+                    const file = e.target.files[0];
+                    if (file) this.viz.loadTSV(file);
+                });
+            }
+
+            _setupGenomes() {
+                d3.select("#ref-selector").on("change", (e) => {
+                    const newRef = e.target.value;
+                    this.viz.store.setRefGenome(newRef);
+                    this.viz.store.state.focusChroms.clear();
+                    this.updateFocusList();
+                    this.showToast(`Reference changed to: ${newRef}`);
+                    
+                    if (this.viz.state.colorMode === "ref") this.viz.applyColoring();
+                    this.viz.autoScaleToFit();
+                });
+            }
+
+            _setupControls() {
+                d3.select("#btn-ref-color").on("click", () => {
+                    this.viz.state.colorMode = (this.viz.state.colorMode === "ref") ? "block" : "ref";
+                    this.viz.applyColoring();
+                });
+
+                d3.select("#btn-reset-focus").on("click", () => {
+                    this.viz.state.focusChroms.clear();
+                    this.viz.config.zoom = 1.0;
+                    d3.select("#cfg-zoom-slider").property("value", 1.0);
+                    d3.select("#cfg-zoom-text").property("value", 1.0);
+                    this.updateFocusList();
+                    this.viz.autoScaleToFit();
+                    this.viz.render();
+                });
+
+                d3.select("#cfg-showLabels").on("change", (e) => {
+                    this.viz.config.showLabels = e.target.checked;
+                    this.viz.render(false);
+                });
+
+                d3.select("#cfg-freeFormAlignment").on("change", (e) => {
+                    this.viz.state.freeFormAlignment = e.target.checked;
+                    if (!e.target.checked) {
+                        this.viz.state.samples.forEach(s => {
+                            s.chroms.forEach(c => {
+                                delete c.customOffsetBp;
+                            });
+                        });
+                    } else {
+                        this.viz.state.samples.forEach(s => {
+                            s.chroms.forEach(c => {
+                                c.customOffsetBp = c.absX / this.viz.config.scale;
+                            });
+                        });
+                    }
+                    this.viz.render(true);
+                });
+
+                const synSlider = d3.select("#cfg-minSynteny-slider");
+                const synText = d3.select("#cfg-minSynteny-text");
+                const sync = (val) => {
+                    this.viz.store.setMinSyntenySize(parseInt(val) || 0);
+                    synSlider.property("value", val);
+                    synText.property("value", val);
+                    this.viz.render();
+                };
+                synSlider.on("input", (e) => sync(e.target.value));
+                synText.on("input", (e) => sync(e.target.value));
+
+                const layoutControls = [
+                    { key: 'trackSpacing', baseId: '#cfg-trackSpacing' },
+                    { key: 'labelSize', baseId: '#cfg-labelSize' },
+                    { key: 'chromMargin', baseId: '#cfg-chromMargin' },
+                    { key: 'scaleBarMb', baseId: '#cfg-scaleBarMb' },
+                    { key: 'zoom', baseId: '#cfg-zoom' },
+                    { key: 'chromStrokeWidth', baseId: '#cfg-chromStrokeWidth' }
+                ];
+                
+                layoutControls.forEach(ctrl => {
+                    const slider = d3.select(ctrl.baseId + "-slider");
+                    const text = d3.select(ctrl.baseId + "-text");
+                    const sync = (val) => {
+                        const parsed = parseFloat(val);
+                        this.viz.config[ctrl.key] = parsed;
+                        if (ctrl.key === 'zoom') {
+                            this.viz.config.scale = (this.viz.state.baseScale || 0.0001) * parsed;
+                        }
+                        slider.property("value", parsed);
+                        text.property("value", parsed);
+                        this.viz.render(false);
+                    };
+                    slider.on("input", (e) => sync(e.target.value));
+                    text.on("change", (e) => sync(e.target.value));
+                });
+
+                // Bind showScaleBar checkbox
+                const showScaleBarCheckbox = d3.select("#cfg-showScaleBar");
+                showScaleBarCheckbox.property("checked", this.viz.config.showScaleBar !== false);
+                showScaleBarCheckbox.on("change", (e) => {
+                    this.viz.config.showScaleBar = e.target.checked;
+                    this.viz.render(false);
+                });
+
+                d3.select("#btn-genomes-all").on("click", () => {
+                    this.viz.state.hiddenGenomes.clear();
+                    this.viz.render();
+                });
+                d3.select("#btn-genomes-none").on("click", () => {
+                    this.viz.state.samples.forEach(s => this.viz.state.hiddenGenomes.add(s.id));
+                    this.viz.render();
+                });
+            }
+
+            _setupSidebars() {
+                d3.select("#toggle-sidebar-left").on("click", function() {
+                    const sb = d3.select("#sidebar-left");
+                    const tab = d3.select(this);
+                    const hidden = sb.classed("hidden");
+                    sb.classed("hidden", !hidden);
+                    tab.classed("is-hidden", !hidden);
+                    tab.text(!hidden ? "⇉" : "⇇");
+                });
+                d3.select("#toggle-sidebar-right").on("click", function() {
+                    const sb = d3.select("#sidebar-right");
+                    const tab = d3.select(this);
+                    const hidden = sb.classed("hidden");
+                    sb.classed("hidden", !hidden);
+                    tab.classed("is-hidden", !hidden);
+                    tab.text(!hidden ? "⇇" : "⇉");
+                });
+            }
+
+            updateRefSelector() {
+                const select = d3.select("#ref-selector");
+                select.selectAll("*").remove();
+                this.viz.state.samples.forEach(s => {
+                    select.append("option")
+                        .attr("value", s.id)
+                        .text(s.name)
+                        .property("selected", s.id === this.viz.state.refGenomeId);
+                });
+                // Ensure dropdown matches actual state
+                select.property("value", this.viz.state.refGenomeId);
+            }
+
+            updateFocusList() {
+                const container = d3.select("#chrom-focus-list");
+                container.selectAll("*").remove();
+                
+                const ref = this.viz.state.samples.find(s => s.id === this.viz.state.refGenomeId);
+                if (!ref) return;
+
+                // Ensure we initialize x_index if missing
+                ref.chroms.forEach((c, idx) => {
+                    if (c.x_index === undefined) c.x_index = idx;
+                });
+
+                const sortedChroms = [...ref.chroms].sort((a, b) => (a.x_index ?? 0) - (b.x_index ?? 0));
+
+                sortedChroms.forEach(c => {
+                    const item = container.append("div").attr("class", "genome-item");
+                    
+                    // Prepend drag handle
+                    item.append("span").attr("class", "sidebar-drag-handle")
+                        .html(`<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="2" cy="2" r="1.5"/><circle cx="2" cy="7" r="1.5"/><circle cx="2" cy="12" r="1.5"/><circle cx="7" cy="2" r="1.5"/><circle cx="7" cy="7" r="1.5"/><circle cx="7" cy="12" r="1.5"/></svg>`);
+
+                    item.append("input").attr("type", "checkbox")
+                        .property("checked", this.viz.state.focusChroms.has(c.id))
+                        .on("change", (e) => {
+                            if (e.target.checked) {
+                                this.viz.state.focusChroms.add(c.id);
+                                this.showToast(`Focused on ${c.name}`);
+                            } else {
+                                this.viz.state.focusChroms.delete(c.id);
+                            }
+                            this.viz.autoScaleToFit();
+                        });
+                    item.append("span").text((c.marker ? c.marker + " " : "") + c.name);
+
+                    // Drag events
+                    item.attr("draggable", "true");
+                    item.on("dragstart", (e) => {
+                        e.dataTransfer.setData("text/plain", c.id);
+                        item.classed("is-dragging", true);
+                    });
+                    item.on("dragend", () => {
+                        item.classed("is-dragging", false);
+                        container.selectAll(".genome-item").classed("drag-over", false);
+                    });
+                    item.on("dragover", (e) => {
+                        e.preventDefault();
+                        item.classed("drag-over", true);
+                    });
+                    item.on("dragleave", () => {
+                        item.classed("drag-over", false);
+                    });
+                    item.on("drop", (e) => {
+                        e.preventDefault();
+                        const sourceId = e.dataTransfer.getData("text/plain");
+                        if (sourceId && sourceId !== c.id) {
+                             const sourceChrom = ref.chroms.find(x => x.id === sourceId);
+                             const targetChrom = c;
+                             if (sourceChrom && targetChrom) {
+                                 const tmp = sourceChrom.x_index;
+                                 sourceChrom.x_index = targetChrom.x_index;
+                                 targetChrom.x_index = tmp;
+                                 this.viz.render(true);
+                                 this.updateFocusList();
+                             }
+                        }
+                        item.classed("drag-over", false);
+                    });
+
+                    // Hover preview
+                    item.on("mouseenter", () => {
+                        if (this.viz.state.draggedChrom || this.viz.state.draggedSample) return;
+                        if (!this.viz.state.focusChroms.has(c.id)) {
+                            this.viz.state.hoveredFocusChromId = c.id;
+                            this.viz.autoScaleToFit();
+                        }
+                    });
+                    item.on("mouseleave", () => {
+                        if (this.viz.state.draggedChrom || this.viz.state.draggedSample) return;
+                        if (this.viz.state.hoveredFocusChromId === c.id) {
+                            this.viz.state.hoveredFocusChromId = null;
+                            this.viz.autoScaleToFit();
+                        }
+                    });
+                });
+            }
+
+            updateGenomeList() {
+                const container = d3.select("#genome-list");
+                container.selectAll("*").remove();
+                [...this.viz.state.samples].sort((a,b) => a.slot - b.slot).forEach(s => {
+                    const item = container.append("div").attr("class", `genome-item ${this.viz.state.refGenomeId === s.id ? 'is-ref' : ''}`);
+                    
+                    // Prepend drag handle
+                    item.append("span").attr("class", "sidebar-drag-handle")
+                        .html(`<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="2" cy="2" r="1.5"/><circle cx="2" cy="7" r="1.5"/><circle cx="2" cy="12" r="1.5"/><circle cx="7" cy="2" r="1.5"/><circle cx="7" cy="7" r="1.5"/><circle cx="7" cy="12" r="1.5"/></svg>`);
+
+                    item.append("input").attr("type", "checkbox")
+                        .property("checked", !this.viz.state.hiddenGenomes.has(s.id))
+                        .on("change", (e) => {
+                            if (e.target.checked) this.viz.state.hiddenGenomes.delete(s.id);
+                            else this.viz.state.hiddenGenomes.add(s.id);
+                            this.viz.render();
+                        });
+                    item.append("span").text(s.name).attr("title", s.name);
+
+                    // Drag events
+                    item.attr("draggable", "true");
+                    item.on("dragstart", (e) => {
+                        e.dataTransfer.setData("text/plain", s.id);
+                        item.classed("is-dragging", true);
+                    });
+                    item.on("dragend", () => {
+                        item.classed("is-dragging", false);
+                        container.selectAll(".genome-item").classed("drag-over", false);
+                    });
+                    item.on("dragover", (e) => {
+                        e.preventDefault();
+                        item.classed("drag-over", true);
+                    });
+                    item.on("dragleave", () => {
+                        item.classed("drag-over", false);
+                    });
+                    item.on("drop", (e) => {
+                        e.preventDefault();
+                        const sourceId = e.dataTransfer.getData("text/plain");
+                        if (sourceId && sourceId !== s.id) {
+                            const sourceSample = this.viz.state.samples.find(x => x.id === sourceId);
+                            const targetSample = s;
+                            if (sourceSample && targetSample) {
+                                const tmp = sourceSample.slot;
+                                sourceSample.slot = targetSample.slot;
+                                targetSample.slot = tmp;
+                                this.viz.render(true);
+                                this.updateGenomeList();
+                            }
+                        }
+                        item.classed("drag-over", false);
+                    });
+                });
+            }
+
+            showToast(msg) {
+                const container = d3.select("#toaster-container");
+                const toast = container.append("div").attr("class", "toast").text(msg);
+                
+                let remaining = 3000;
+                let start = Date.now();
+                let timer;
+
+                const pause = () => {
+                    clearTimeout(timer);
+                    remaining -= Date.now() - start;
+                };
+
+                const resume = () => {
+                    if (remaining <= 0) return;
+                    start = Date.now();
+                    timer = setTimeout(() => {
+                        toast.style("opacity", "0").style("transform", "translateX(20px)");
+                        setTimeout(() => toast.remove(), 500);
+                    }, remaining);
+                };
+
+                toast.on("mouseenter", pause).on("mouseleave", resume);
+                resume();
+            }
+
+            _setupExport() {
+                d3.select("#btn-export-svg").on("click", () => {
+                    const svgNode = d3.select("#viz svg").node();
+                    if (svgNode) Exporter.exportSVG(svgNode);
+                    else this.showToast("No visualization to export!");
+                });
+
+                d3.select("#btn-export-png").on("click", () => {
+                    const svgNode = d3.select("#viz svg").node();
+                    if (svgNode) {
+                        this.showToast("Generating high-res PNG... please wait.");
+                        Exporter.exportPNG(svgNode);
+                    } else {
+                        this.showToast("No visualization to export!");
+                    }
+                });
+
+                d3.select("#btn-export-html").on("click", async () => {
+                    this.showToast("Packaging analysis report... please wait.");
+                    try {
+                        await Exporter.exportHTML(this.viz);
+                        this.showToast("Report exported successfully!");
+                    } catch (err) {
+                        console.error(err);
+                        this.showToast("Export failed: " + err.message);
+                    }
+                });
+            }
+        }
+
+        const viz = new SyntenyViz("#viz");
+        viz.use(new SidebarController());
+        
+        if (window.bakedData) {
+            viz.setData(window.bakedData);
+        } else {
+            const demoTsv = `block_id	bin_id	seq_id	start	end	bin_id2	seq_id2	start2	end2
+A	S1	Chr 1	0	1000000	S2	Chr 1	0	1000000
+B	S1	Chr 2	0	2000000	S2	Chr 2	0	2000000
+C	S1	Chr 3	0	500000	S2	Chr 3	0	500000
+C	S1	Chr 3	0	500000	S2	Chr 2	2000000	2500000`;
+            viz.setData(demoTsv);
+        }
+    </script>
+</body>
+</html>

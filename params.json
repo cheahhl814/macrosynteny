@@ -1,0 +1,55 @@
+{
+  "skill_name": "macrosynteny",
+  "skill_title": "Multi-Genome Macrosynteny Analysis",
+  "skill_description": "Compute multi-genome macrosynteny blocks from genome assemblies with ntSynt (minimizer-graph, divergence-aware parameters set via Mash), format them for interchange (links.tsv + sequence_lengths.tsv), visualize interactively with FunMacroSynteny (single-file HTML), and qc the blocks with de-novo block statistics.",
+  "skill_version": "1.0.0",
+  "skill_updated": "2026-10-06",
+  "skill_triggers": ["macrosynteny", "synteny blocks", "ntSynt", "FunMacroSynteny", "compare assemblies", "structural genomics", "links.tsv"],
+  "run_dir": "/home/cheahhl814/.agents/skills/macrosynteny",
+  "skills_root": "/home/cheahhl814/.agents/skills",
+  "github_org": "cheahhl814",
+  "github_repo": "github.com/cheahhl814/macrosynteny",
+  "skill_shape": "meta-skill-multi-subskill",
+  "sub_skills": ["preflight", "run", "viz", "qc", "debug"],
+  "tool_inventory": [
+    {"name": "ntsynt", "version": "*", "role": "synteny-block detection (core)", "status": "found"},
+    {"name": "mash", "version": "*", "role": "pairwise divergence estimation to set ntSynt -d", "status": "found"},
+    {"name": "samtools", "version": "*", "role": "faidx .fai generation for formatting + stats", "status": "found"},
+    {"name": "seqtk", "version": "*", "role": "FASTA utilities (ntSynt dependency)", "status": "found"},
+    {"name": "snakemake-minimal", "version": "*", "role": "re-execution/inspection of ntSynt internal pipeline", "status": "found"},
+    {"name": "python", "version": "3.12", "role": "glue scripts (formatting, FunMacroSynteny server)", "status": "found"},
+    {"name": "pandas", "version": "*", "role": "links.tsv / sequence_lengths.tsv interchange handling", "status": "found"},
+    {"name": "numpy", "version": "*", "role": "numeric ops in format/stats scripts", "status": "found"}
+  ],
+  "vendor_assets": [
+    {
+      "name": "FunMacroSynteny",
+      "repo": "https://github.com/ZarulHanifah/FunMacroSynteny",
+      "commit": "26a10c50a2295a031e68be9799da02a1ff993086",
+      "license": "GPL-3.0",
+      "role": "interactive single-file macrosynteny HTML visualization",
+      "vendored_at": "bin/funmacrosynteny/",
+      "runtime": "modern browser (+ optional `python -m http.server`, stdlib only)"
+    },
+    {
+      "name": "ntSynt visualization + stats scripts",
+      "repo": "https://github.com/BirolLab/ntSynt",
+      "commit": "5ff2efe182a9d3faba6cdf82d2b3167466942f0c",
+      "license": "GPL-3.0",
+      "role": "links.tsv/sequence_lengths.tsv formatting (format_blocks_gggenomes.sh/py, sort_ntsynt_blocks.py) + block statistics (denovo_synteny_block_stats.py)",
+      "vendored_at": "bin/viz/ + bin/stats/",
+      "runtime": "pixi env"
+    }
+  ],
+  "vendor_notes": "miller (mlr) was dropped from the inventory after the joint solve clashed with ntsynt+python 3.12; the single `mlr --tsv sort -f strand -n block_id` step is replicated by bin/viz/sort_links_mlr_compat.py instead.",
+  "pixi_available": true,
+  "git_initialized": true,
+  "disk_gb_free": 81,
+  "target_tiers": ["large"],
+  "input_formats": ["fasta"],
+  "with_nextflow_runner": false,
+  "pixi_channels": ["conda-forge", "bioconda"],
+  "verdict": "GO",
+  "warnings": [],
+  "generated": "2026-10-06T00:00:00Z"
+}

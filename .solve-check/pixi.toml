@@ -1,0 +1,9 @@
+[workspace]
+name="solve-check"
+channels=["conda-forge","bioconda"]
+platforms=["linux-64"]
+[dependencies]
+"ntsynt" = "amr-gene-screening"
+"mash" = "amr-gene-screening"
+"samtools" = "amr-gene-screening"
+"seqtk" = "amr-gene-screening"

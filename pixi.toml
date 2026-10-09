@@ -1,0 +1,33 @@
+[workspace]
+name = "macrosynteny"
+version = "1.0.0"
+description = "Multi-genome macrosynteny: ntSynt block detection + FunMacroSynteny interactive visualization"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[dependencies]
+# Every tool here was confirmed via `pixi search` during preflight (status: found in params.json).
+"ntsynt" = "*"
+"mash" = "*"
+"samtools" = "*"
+"seqtk" = "*"
+"snakemake-minimal" = "*"
+"python" = "3.12.*"
+"pandas" = "*"
+"numpy" = "*"
+
+# Note: miller (mlr) was evaluated for `format_blocks_gggenomes` but clashed with
+# ntsynt + python 3.12 in the joint solve; the single sort step it served is
+# replicated by bin/viz/sort_links_mlr_compat.py instead. FunMacroSynteny is a
+# browser web app vendored under bin/funmacrosynteny/ — it is NOT a conda package.
+
+[tasks]
+# Common workflows as pixi tasks
+preflight = "echo 'Run preflight/macrosynteny-input-preflight for usage'"
+run = "echo 'Run build/ntsynt-run for usage'"
+viz = "echo 'Run viz/funmacro-viz for usage'"
+qc = "echo 'Run qc/macrosynteny-qc for usage'"
+debug = "echo 'Run debug/macrosynteny-debug for usage'"
+# Self-check: compares this skill's git SHA to upstream (github.com/cheahhl814/macrosynteny).
+# See bin/skill-update-check.py for the verdict legend (UP-TO-DATE / BEHIND-BY-N / OFFLINE).
+update-check = "python3 bin/skill-update-check.py"

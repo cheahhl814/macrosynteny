@@ -1,0 +1,2 @@
+file	format	sha256	generated-by
+ref.fasta	fasta	a89f8357a297dece4732dd63dedc50150811fc39e37e6a327e072c9f3860dd55	make_fixtures.py seed=20261005
