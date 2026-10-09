@@ -33,3 +33,16 @@ tool-inventory.json
 .battle-test-scratch/
 exec-canary-report.md
 exec-canary_evidence.txt
+
+# Agent-session local state (Claude Code / OpenCode run with cwd = this repo)
+# — permissions allowlists etc. are machine/session-local; global git ignores
+# cover settings.local.json, but ship the guard in-repo too.
+.claude/
+.opencode/
+
+# Snakemake state (ntSynt / ntSynt-viz are snakemake-driven; a run executed
+# inside the skill dir instead of $RUN_DIR must not ship)
+.snakemake/
+
+# R stray (ntSynt-viz/R plotting in the caller's cwd)
+Rplots.pdf
