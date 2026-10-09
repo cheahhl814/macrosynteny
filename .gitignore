@@ -46,3 +46,7 @@ exec-canary_evidence.txt
 
 # R stray (ntSynt-viz/R plotting in the caller's cwd)
 Rplots.pdf
+
+# Handoff documents (per-conversation, takeover audit trail — never ship)
+handoff.md
+handoff-archive.md
