@@ -1,7 +1,7 @@
 ---
 name: funmacro-viz
 description: 'Visualization phase of macrosynteny: convert an ntSynt synteny_blocks.tsv into the gggenomes/FunMacroSynteny interchange TSVs (links.tsv + sequence_lengths.tsv) with the vendored ntSynt formatting scripts (FAI order = genome order), then bake a single interactive HTML via the vendored FunMacroSynteny app (macrosynteny.py). Covers genome/chromosome ordering, contig aggregation, browser serving, and the 300-DPI PNG / SVG / single-file-collaborator exports. Has 3 ask-user stop points (SP1-SP3). Triggers: "visualize synteny", "funmacro html", "render synteny blocks".'
-version: 1.2.0
+version: 1.3.0
 updated: "2026-10-09"
 triggers:
   - "visualize synteny"
@@ -11,7 +11,7 @@ triggers:
 
 # FunMacroSynteny Viz
 
-> **v1.2.0.** Converts the run's blocks TSV into `links.tsv` + `sequence_lengths.tsv`, then bakes the interactive single-file HTML. Reads `run-done.json`; writes `output/funmacrosynteny.html`.
+> **v1.3.0.** Converts the run's blocks TSV into `links.tsv` + `sequence_lengths.tsv`, then bakes the interactive single-file HTML. Reads `run-done.json`; writes `output/funmacrosynteny.html`.
 
 ## 0. Inputs / Outputs contract
 

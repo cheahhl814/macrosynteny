@@ -1,7 +1,7 @@
 ---
 name: macrosynteny
 description: 'Multi-genome macrosynteny analysis: compute cross-assembly synteny blocks with ntSynt (Mash-derived divergence-aware parameters), format them into gggenomes/FunMacroSynteny interchange TSVs (links.tsv + sequence_lengths.tsv), produce an interactive single-file HTML visualization, and QC the blocks with de-novo block statistics. Handles whole-genome FASTA assemblies (2-10+ genomes). Version-aware stage routing with explicit Go/No-Go gates and signature-library debugging. Triggers: "macrosynteny", "synteny blocks", "ntSynt", "FunMacroSynteny", "compare assemblies".'
-version: 1.2.0
+version: 1.3.0
 updated: "2026-10-09"
 triggers:
   - "macrosynteny"
@@ -15,7 +15,7 @@ triggers:
 
 # Multi-Genome Macrosynteny Analysis
 
-> **v1.2.0.** Compute multi-genome macrosynteny blocks with **ntSynt** (minimizer-graph, divergence-aware), convert them to the interchange TSVs, visualize them interactively with **FunMacroSynteny** (single-file HTML), and validate the result with **de-novo block statistics** — in four gated phases.
+> **v1.3.0.** Compute multi-genome macrosynteny blocks with **ntSynt** (minimizer-graph, divergence-aware), convert them to the interchange TSVs, visualize them interactively with **FunMacroSynteny** (single-file HTML), and validate the result with **de-novo block statistics** — in four gated phases.
 >
 > **Dependency skill: [biodb-fetch](https://github.com/cheahhl814/biodb-fetch)** — when genome assemblies are not local, Phase 1 retrieves them from NCBI (Datasets v2 genome endpoint) via biodb-fetch's manifest.tsv/contract_version contract (see §0.3b).
 
@@ -85,8 +85,8 @@ Auto-pick `preflight` when FASTAs are in the work dir or were named in the promp
 | `preflight` | Invoke `preflight/macrosynteny-input-preflight`. Validates FASTAs (retrieving them via bio db fetch if absent — §0.3b), indexes them (`samtools faidx`), computes Mash distances, picks the `-d` parameter cascade, writes `preflight.md` + `run-plan.json`. |
 | `run` | Invoke `build/ntsynt-run`. Executes ntSynt with the preflight-derived parameters. Writes `output/ntSynt.synteny_blocks.tsv`. |
 | `viz` | Invoke `viz/funmacro-viz`. Converts blocks → `links.tsv` + `sequence_lengths.tsv` → single-file interactive HTML via the vendored FunMacroSynteny app. Writes `output/funmacrosynteny.html`. |
-| `analysis` | Invoke `analysis/macrosynteny-interpret`. 20-table rearrangement interpretation over the viz artifacts (needs the ntSynt-viz path). |
-| `qc` | Invoke `qc/macrosynteny-qc`. Runs de-novo block statistics + sanity checks. Writes `report/macrosynteny-report.md`. |
+| `analysis` | Invoke `analysis/macrosynteny-interpret`. 20-table rearrangement interpretation + COMPULSORY telomere adjudication of fusion/fission candidates (needs the ntSynt-viz path + the qc telomere evidence). |
+| `qc` | Invoke `qc/macrosynteny-qc`. Runs de-novo block statistics, COMPULSORY telomere evidence (`tidk ends` + `tidk search`), and sanity checks. Writes `report/macrosynteny-report.md`. |
 | `qc-done` | Surface `$RUN_DIR/report/macrosynteny-report.md` to the user. |
 | Any failure | Invoke `debug/macrosynteny-debug` with the failing command's stderr. |
 

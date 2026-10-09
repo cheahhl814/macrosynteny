@@ -1,7 +1,7 @@
 ---
 name: macrosynteny-debug
 description: 'Failure interpreter for macrosynteny analysis phases: reads the failing stderr / empty output / NO-GO verdict and routes to the matching signature-library entry (ntSynt Snakemake locks, Bloom-filter OOM, FAI/mash issues, links.tsv malformation, FunMacroSynteny bake failures). Writes debug-report.md with verdict RECOVERABLE (re-run with the fix) or BLOCKED (user intervention). Triggers: "macrosynteny failed", "ntSynt error", "debug synteny".'
-version: 1.2.0
+version: 1.3.0
 updated: "2026-10-09"
 triggers:
   - "macrosynteny failed"
@@ -11,7 +11,7 @@ triggers:
 
 # Macrosynteny Debug
 
-> **v1.2.0.** Interprets a failure anywhere in preflight → run → viz → qc and returns a concrete fix. Writes `debug-report.md`. Never runs heavy computations itself.
+> **v1.3.0.** Interprets a failure anywhere in preflight → run → viz → qc and returns a concrete fix. Writes `debug-report.md`. Never runs heavy computations itself.
 
 ## 0. Inputs / Outputs contract
 
@@ -65,6 +65,8 @@ Matches failure signatures against the **combined signature library** of all fou
 | `window.bakedData` empty / blank HTML | viz | baking consumed empty links.tsv | fix step 1 of viz first |
 | divergence > 100 or nonsense | preflight | Mash distance misinterpretation | use divergence, not (1−identity) similarity (docs-corpus/mash) |
 | `ModuleNotFoundError` in a vendored script | any | pixi env not installed | `pixi install` at the skill root |
+| `tidk telomeric: unrecognized subcommand` | old invocation (pre-1.3.0) | use `tidk search` (windows) + `tidk ends` (T2T) — 'telomeric' was never a valid subcommand |
+| fusion/fission candidates reported without telomere verdict | interpretation ran pre-1.3.0 flow, or qc telomere step skipped | re-run analysis + qc; the qc report may not carry unadjudicated candidates |
 
 Full per-phase tables live in each sub-skill's `Troubleshooting — Signature library` section; every phase ships ≥ 3 entries.
 

@@ -1,7 +1,7 @@
 ---
 name: macrosynteny-input-preflight
-description: 'Preflight for macrosynteny analysis: validate ≥2 genome FASTA assemblies (gzipped OK; optional NCBI retrieval via the biodb-fetch dependency skill when assemblies are not local), generate samtools faidx indexes, compute Mash pairwise divergence sketch/dist matrix, derive the ntSynt -d parameter cascade (block_size/indel/merge/w_rounds from the README divergence table), and write preflight.md + run-plan.json with verdict GO/GO-WITH-WARNINGS/NO-GO. Has 5 ask-user stop points (SP1-SP5). Triggers: "macrosynteny preflight", "synteny preflight", "compare assemblies preflight".'
-version: 1.2.0
+description: 'Preflight for macrosynteny analysis: validate ≥2 genome FASTA assemblies (gzipped OK; optional NCBI retrieval via the biodb-fetch dependency skill when assemblies are not local; resolves the telomeric-repeat motif for tidk evidence), generate samtools faidx indexes, compute Mash pairwise divergence sketch/dist matrix, derive the ntSynt -d parameter cascade (block_size/indel/merge/w_rounds from the README divergence table), and write preflight.md + run-plan.json with verdict GO/GO-WITH-WARNINGS/NO-GO. Has 6 ask-user stop points (SP1-SP6; SP6 sets the compulsory telomeric motif). Triggers: "macrosynteny preflight", "synteny preflight", "compare assemblies preflight".'
+version: 1.3.0
 updated: "2026-10-09"
 triggers:
   - "macrosynteny preflight"
@@ -11,7 +11,7 @@ triggers:
 
 # Macrosynteny Input Preflight
 
-> **v1.2.0.** Mirrors `bettamt-preflight`: gather inputs → compute evidence → write `run-plan.json` (machine contract) + `preflight.md` (human audit). **Never** invokes the run sub-skill. `build/ntsynt-run` refuses to run without `preflight.md` ≥ `GO-WITH-WARNINGS`.
+> **v1.3.0.** Mirrors `bettamt-preflight`: gather inputs → compute evidence → write `run-plan.json` (machine contract) + `preflight.md` (human audit). **Never** invokes the run sub-skill. `build/ntsynt-run` refuses to run without `preflight.md` ≥ `GO-WITH-WARNINGS`.
 
 ## Audience
 
@@ -75,6 +75,15 @@ Auto-pick when: no user `-d` given → trust Mash.
 | Very high scaffold/contig counts (e.g. > 10k contigs in a Gbp genome) | ntSynt works on contigs but block count inflates and viz gets noisy | Warn: recommend chromosome-scale assemblies for best results; ask (A) proceed as-is, (B) aggregate small contigs above a length threshold in the viz layer only (recommended), (C) abort |
 
 Auto-pick: proceed with (A) and log the warning when user is absent (batch mode) — but always surface it in `preflight.md`.
+
+### SP6 — Telomeric-repeat motif for the compulsory telomere evidence (v1.3.0)
+
+| Trigger | Evidence check | Action |
+| --- | --- | --- |
+| User named a motif or the taxon maps to a `tidk find` clade | Unambiguous | Record motif + source; no ask |
+| Taxon not in the clade list and no motif known | Compulsory downstream evidence needs a motif | Ask: "(A) run `tidk explore` on one assembly and adopt the strongest edge-enriched candidate (recommended), (B) you supply the motif, (C) skip telomere evidence — caps the final verdict at PASS-WITH-WARNINGS (telomere-inconclusive, and fusion/fission candidates cannot be adjudicated)" |
+
+Auto-pick: none — evidence-class decision.
 
 ### SP4 — Divergence > 10% or mixed divergences
 
@@ -150,6 +159,7 @@ Record every measurement in `preflight_evidence.txt` with the exact command used
     "-d": 2, "-b": 1000, "--indel": 50000, "--merge": "100000", "--w_rounds": [250, 100],
     "-p": "ntSynt", "-t": 8
   },
+  "telomere": {"motif": "TTAGGG", "motif_source": "user | find:<clade> | explore | none(inconclusive)", "window_bp": 10000},
   "viz": {"length_threshold": 10000, "colour_assembly": "a.fa"},
   "provenance": {"retrieved": [{"accession": "GCF_000001405.40", "manifest_row": "input/manifest.tsv", "payload": "input/GCF_000001405.40.fna"}]},
   "verdict": "GO",
@@ -183,6 +193,8 @@ Markdown with the standard table (assembly readability, FAI success, genome size
 | `No module named Bio` from biodb-fetch's ncbi_fetch.py | biodb-fetch's Entrez env differs from this skill's pixi env | invoke biodb-fetch scripts via ITS OWN pixi env (`pixi run --manifest-path <biodb-fetch>/pixi.toml`) — skills own their environments; do not copy BioPython into this skill |
 | biodb-fetch `manifest.tsv` missing `contract_version` | stale biodb-fetch deploy | `pixi run update-check` inside the biodb-fetch skill dir; re-deploy before proceeding |
 | duplicated downloads (same accession twice) | cache bypassed | biodb-fetch shared store dedupes — don't pass `--refresh` unless explicitly re-fetching |
+| `tidk find: clade not found` | taxon outside tidk's clade list | use `tidk explore` (de-novo repeat discovery) or a user-supplied motif; record the source in run-plan.json.telomere.motif_source |
+| `tidk explore` returns no strong candidate | repeat-poor or very divergent telomere motif | SP6 option B/C; never silently pick a weak candidate as the motif |
 
 ## Verification
 

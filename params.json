@@ -1,8 +1,8 @@
 {
   "skill_name": "macrosynteny",
   "skill_title": "Multi-Genome Macrosynteny Analysis",
-  "skill_description": "Compute multi-genome macrosynteny blocks from genome assemblies with ntSynt (minimizer-graph, divergence-aware parameters set via Mash), format them for interchange (links.tsv + sequence_lengths.tsv), visualize interactively with FunMacroSynteny (single-file HTML), and qc the blocks with de-novo block statistics.",
-  "skill_version": "1.2.0",
+  "skill_description": "Compute multi-genome macrosynteny blocks from genome assemblies with ntSynt (minimizer-graph, divergence-aware parameters set via Mash), format them for interchange (links.tsv + sequence_lengths.tsv), visualize interactively with FunMacroSynteny (single-file HTML), qc the blocks with de-novo block statistics + compulsory tidk telomere evidence that adjudicates fusion/fission candidates as REAL events vs assembly fragmentation.",
+  "skill_version": "1.3.0",
   "skill_updated": "2026-10-09",
   "skill_triggers": [
     "macrosynteny",
@@ -87,7 +87,7 @@
     {
       "name": "tidk",
       "version": "*",
-      "role": "telomeric repeat search for optional scaffold-completeness QC",
+      "role": "COMPULSORY telomeric-repeat evidence (tidk ends + search) for T2T context + fusion/fission adjudication",
       "status": "found"
     }
   ],

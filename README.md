@@ -1,6 +1,6 @@
 # Multi-Genome Macrosynteny Analysis
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue)](#-installation)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue)](#-installation)
 [![Type](https://img.shields.io/badge/type-agent%20skill-blueviolet)](#-installation)
 [![Built with](https://img.shields.io/badge/built%20with-bioinfo--skill--creator-orange)](https://github.com/cheahhl814/bioinfo-skill-creator)
 
@@ -9,7 +9,7 @@ Compute multi-genome macrosynteny blocks from genome assemblies with ntSynt (min
 **Repository**: https://github.com/cheahhl814/macrosynteny
 
 > [!NOTE]
-> Current version: **v1.2.0** (updated 2026-10-09).
+> Current version: **v1.3.0** (updated 2026-10-09).
 
 ## Contents
 
@@ -62,6 +62,7 @@ FunMacroSynteny
 compare assemblies
 download genomes then compare assemblies
 rearrangement analysis (fusion / fission / inversion)
+split a real fusion from assembly fragmentation
 ```
 
 > [!NOTE]
@@ -100,6 +101,9 @@ The analysis follows a phased evidence chain. Each phase consumes the artifacts 
 > [!TIP]
 > Read each sub-skill's `SKILL.md` for the full procedure, its ask-user stop points, and its signature library (stderr pattern → cause → fix).
 
+> [!IMPORTANT]
+> **Telomere evidence is compulsory (v1.3.0).** The final report always carries tidk results for every assembly. When interpretation tables exist, every fusion/fission candidate gets a telomere verdict — the discriminator between a real structural event and an assembly-fragmentation artifact (fragmented assemblies produce scaffold breaks with no telomeric repeats; real events are telomere-coherent at the true ends and silent at junctions).
+
 **Genomes not local?** Phase 1 delegates retrieval to [biodb-fetch](https://github.com/cheahhl814/biodb-fetch) (`scripts/ncbi_datasets.py genome --accession <ACCESSION>`), verifies the `contract_version` in the returned `manifest.tsv`, then treats the fetched FASTAs like any other input. Retrieved payloads are recorded in `run-plan.json` for provenance.
 
 ## 🧰 Tools
@@ -117,7 +121,7 @@ All tools are resolved from conda-forge/bioconda via the pinned `pixi.toml`.
 | `pandas` | * | links.tsv / sequence_lengths.tsv interchange handling |
 | `numpy` | * | numeric ops in format/stats scripts |
 | `ntsynt-viz` | * | static ribbon plots + chrom-paint-feats + est-distances (interpret input) |
-| `tidk` | * | telomeric repeat search for optional scaffold-completeness QC |
+| `tidk` | * | COMPULSORY telomeric-repeat evidence: `tidk ends` (T2T status) + `tidk search` (per-window counts) — adjudicates fusion/fission candidates as real events vs assembly fragmentation |
 
 Tool usage is grounded in the offline `docs-corpus/` snapshots (version-matched `--help`/`man` captures, upstream repo docs, and web docs as fallback) — the agent reads these instead of guessing flags.
 
