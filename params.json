@@ -17,8 +17,8 @@
     "chromosome painting",
     "telomere signal"
   ],
-  "run_dir": "/home/cheahhl814/.agents/skills/macrosynteny",
-  "skills_root": "/home/cheahhl814/.agents/skills",
+  "run_dir": "<skill-install-path>",
+  "skills_root": "<agent-skills-directory>",
   "github_org": "cheahhl814",
   "github_repo": "github.com/cheahhl814/macrosynteny",
   "skill_shape": "meta-skill-multi-subskill",
@@ -122,7 +122,7 @@
       "source": "user's Betta macrosynteny workspace (claude_workspace, emailing_Indonesian_group)",
       "license": "GPL-3.0 (skill-consistent)",
       "role": "tidkFind TSV -> per-scaffold telomere-signal JSON summarization",
-      "vendored_at": "bin/extras/telomere_to_json.py + bin/extras/telomere-AGENTS.md"
+      "vendored_at": "bin/extras/telomere_to_json.py + bin/extras/telomere-readme.md"
     }
   ],
   "vendor_notes": "miller (mlr) was dropped from the inventory after the joint solve clashed with ntsynt+python 3.12; the single `mlr --tsv sort -f strand -n block_id` step is replicated by bin/viz/sort_links_mlr_compat.py instead.",

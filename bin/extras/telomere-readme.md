@@ -1,5 +1,5 @@
 # Telomeric repeat QC docs — vendored from the user workspace telomere module (v1.2.0). GPL-3.0.
-# Describes the JSON schema tidk->telomere_to_json.py emits and the interpretation table.
+# Describes the JSON schema (file named telomere-readme.md to avoid colliding with the AGENTS.md section-reference convention) tidk->telomere_to_json.py emits and the interpretation table.
 # Original header intentionally generic (no machine-specific paths).
 
 # Telomeric Repeat Data — AI Agent Guide

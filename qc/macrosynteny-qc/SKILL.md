@@ -79,7 +79,7 @@ python3 "$STATS" -h   # flag reference; also in docs-corpus/ntsynt
 
 ### 1b. Telomere evidence (COMPULSORY since v1.3.0 — vendored helper, `bin/extras/`)
 
-Telomere signal is the discriminator between a REAL fusion/fission and a fragmented assembly: a fragmented genome produces spurious candidate fissions/fusions precisely where scaffolds end without telomeres, while a true fusion/fission is telomere-coherent at the junctions and the true ends. Run for EVERY assembly (docs: `docs-corpus/tidk/cli-reference.md`, `bin/extras/telomere-AGENTS.md`).
+Telomere signal is the discriminator between a REAL fusion/fission and a fragmented assembly: a fragmented genome produces spurious candidate fissions/fusions precisely where scaffolds end without telomeres, while a true fusion/fission is telomere-coherent at the junctions and the true ends. Run for EVERY assembly (docs: `docs-corpus/tidk/cli-reference.md`, `bin/extras/telomere-readme.md`).
 
 ```bash
 # per assembly (motif determined at preflight -> run-plan.json.telomere.motif):

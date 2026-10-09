@@ -124,8 +124,8 @@ EXECUTION:
                         YAML file itself. Snakemake will look for a folder
                         with the profile name or the existence of the relative
                         path in
-                        `/home/cheahhl814/.config/kdedefaults/snakemake`,
-                        `/home/cheahhl814/.config/snakemake` and the current
+                        `~/.config/kdedefaults/snakemake`,
+                        `~/.config/snakemake` and the current
                         working directory. Alternatively, you can also specify
                         absolute paths. If a profile name or folder is given,
                         it has to contain a file `profile.yaml` (or a
