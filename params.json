@@ -2,24 +2,78 @@
   "skill_name": "macrosynteny",
   "skill_title": "Multi-Genome Macrosynteny Analysis",
   "skill_description": "Compute multi-genome macrosynteny blocks from genome assemblies with ntSynt (minimizer-graph, divergence-aware parameters set via Mash), format them for interchange (links.tsv + sequence_lengths.tsv), visualize interactively with FunMacroSynteny (single-file HTML), and qc the blocks with de-novo block statistics.",
-  "skill_version": "1.0.0",
-  "skill_updated": "2026-10-06",
-  "skill_triggers": ["macrosynteny", "synteny blocks", "ntSynt", "FunMacroSynteny", "compare assemblies", "structural genomics", "links.tsv"],
+  "skill_version": "1.1.0",
+  "skill_updated": "2026-10-09",
+  "skill_triggers": [
+    "macrosynteny",
+    "synteny blocks",
+    "ntSynt",
+    "FunMacroSynteny",
+    "compare assemblies",
+    "structural genomics",
+    "links.tsv"
+  ],
   "run_dir": "/home/cheahhl814/.agents/skills/macrosynteny",
   "skills_root": "/home/cheahhl814/.agents/skills",
   "github_org": "cheahhl814",
   "github_repo": "github.com/cheahhl814/macrosynteny",
   "skill_shape": "meta-skill-multi-subskill",
-  "sub_skills": ["preflight", "run", "viz", "qc", "debug"],
+  "sub_skills": [
+    "preflight",
+    "run",
+    "viz",
+    "qc",
+    "debug"
+  ],
   "tool_inventory": [
-    {"name": "ntsynt", "version": "*", "role": "synteny-block detection (core)", "status": "found"},
-    {"name": "mash", "version": "*", "role": "pairwise divergence estimation to set ntSynt -d", "status": "found"},
-    {"name": "samtools", "version": "*", "role": "faidx .fai generation for formatting + stats", "status": "found"},
-    {"name": "seqtk", "version": "*", "role": "FASTA utilities (ntSynt dependency)", "status": "found"},
-    {"name": "snakemake-minimal", "version": "*", "role": "re-execution/inspection of ntSynt internal pipeline", "status": "found"},
-    {"name": "python", "version": "3.12", "role": "glue scripts (formatting, FunMacroSynteny server)", "status": "found"},
-    {"name": "pandas", "version": "*", "role": "links.tsv / sequence_lengths.tsv interchange handling", "status": "found"},
-    {"name": "numpy", "version": "*", "role": "numeric ops in format/stats scripts", "status": "found"}
+    {
+      "name": "ntsynt",
+      "version": "*",
+      "role": "synteny-block detection (core)",
+      "status": "found"
+    },
+    {
+      "name": "mash",
+      "version": "*",
+      "role": "pairwise divergence estimation to set ntSynt -d",
+      "status": "found"
+    },
+    {
+      "name": "samtools",
+      "version": "*",
+      "role": "faidx .fai generation for formatting + stats",
+      "status": "found"
+    },
+    {
+      "name": "seqtk",
+      "version": "*",
+      "role": "FASTA utilities (ntSynt dependency)",
+      "status": "found"
+    },
+    {
+      "name": "snakemake-minimal",
+      "version": "*",
+      "role": "re-execution/inspection of ntSynt internal pipeline",
+      "status": "found"
+    },
+    {
+      "name": "python",
+      "version": "3.12",
+      "role": "glue scripts (formatting, FunMacroSynteny server)",
+      "status": "found"
+    },
+    {
+      "name": "pandas",
+      "version": "*",
+      "role": "links.tsv / sequence_lengths.tsv interchange handling",
+      "status": "found"
+    },
+    {
+      "name": "numpy",
+      "version": "*",
+      "role": "numeric ops in format/stats scripts",
+      "status": "found"
+    }
   ],
   "vendor_assets": [
     {
@@ -45,11 +99,28 @@
   "pixi_available": true,
   "git_initialized": true,
   "disk_gb_free": 81,
-  "target_tiers": ["large"],
-  "input_formats": ["fasta"],
+  "target_tiers": [
+    "large"
+  ],
+  "input_formats": [
+    "fasta"
+  ],
   "with_nextflow_runner": false,
-  "pixi_channels": ["conda-forge", "bioconda"],
+  "pixi_channels": [
+    "conda-forge",
+    "bioconda"
+  ],
   "verdict": "GO",
   "warnings": [],
-  "generated": "2026-10-06T00:00:00Z"
+  "generated": "2026-10-06T00:00:00Z",
+  "dependency_skills": [
+    {
+      "name": "biodb-fetch",
+      "repo": "https://github.com/cheahhl814/biodb-fetch",
+      "version": ">=1.0.0",
+      "role": "genome/assembly retrieval from NCBI (Datasets v2 CLI) when assemblies are not local",
+      "invocation": "biodb-fetch/scripts/ncbi_datasets.py genome --accession <ACCESSION> --outdir <RUN_DIR>/input/",
+      "contract": "every fetch emits manifest.tsv with contract_version \u2014 verify before consuming payloads; payloads land in the shared biodb-fetch store"
+    }
+  ]
 }

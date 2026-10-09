@@ -1,8 +1,8 @@
 ---
 name: macrosynteny-qc
 description: 'QC phase of macrosynteny: run the vendored de-novo synteny block statistics script (denovo_synteny_block_stats.py from BirolLab/ntSynt) over the blocks TSV + FAI files, sanity-check block counts and genome coverage against the Mash divergence, and write report/macrosynteny-report.md with verdict PASS/PASS-WITH-WARNINGS/NO-GO. Triggers: "synteny qc", "synteny block stats", "macrosynteny report".'
-version: 1.0.0
-updated: "2026-10-06"
+version: 1.1.0
+updated: "2026-10-09"
 triggers:
   - "synteny qc"
   - "synteny block stats"
@@ -11,7 +11,7 @@ triggers:
 
 # Macrosynteny QC
 
-> **v1.0.0.** Mirrors `bettamt-qc`: load run artifacts → compute stats → write the final report with a verdict. Reads `run-done.json` (+ `viz-done.json` when present); writes `report/macrosynteny-report.md`.
+> **v1.1.0.** Mirrors `bettamt-qc`: load run artifacts → compute stats → write the final report with a verdict. Reads `run-done.json` (+ `viz-done.json` when present); writes `report/macrosynteny-report.md`.
 
 ## 0. Inputs / Outputs contract
 

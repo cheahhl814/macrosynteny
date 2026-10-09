@@ -1,8 +1,8 @@
 ---
 name: macrosynteny-debug
 description: 'Failure interpreter for macrosynteny analysis phases: reads the failing stderr / empty output / NO-GO verdict and routes to the matching signature-library entry (ntSynt Snakemake locks, Bloom-filter OOM, FAI/mash issues, links.tsv malformation, FunMacroSynteny bake failures). Writes debug-report.md with verdict RECOVERABLE (re-run with the fix) or BLOCKED (user intervention). Triggers: "macrosynteny failed", "ntSynt error", "debug synteny".'
-version: 1.0.0
-updated: "2026-10-06"
+version: 1.1.0
+updated: "2026-10-09"
 triggers:
   - "macrosynteny failed"
   - "ntSynt error"
@@ -11,7 +11,7 @@ triggers:
 
 # Macrosynteny Debug
 
-> **v1.0.0.** Interprets a failure anywhere in preflight → run → viz → qc and returns a concrete fix. Writes `debug-report.md`. Never runs heavy computations itself.
+> **v1.1.0.** Interprets a failure anywhere in preflight → run → viz → qc and returns a concrete fix. Writes `debug-report.md`. Never runs heavy computations itself.
 
 ## 0. Inputs / Outputs contract
 

@@ -1,8 +1,8 @@
 ---
 name: macrosynteny-input-preflight
-description: 'Preflight for macrosynteny analysis: validate ≥2 genome FASTA assemblies (gzipped OK), generate samtools faidx indexes, compute Mash pairwise divergence sketch/dist matrix, derive the ntSynt -d parameter cascade (block_size/indel/merge/w_rounds from the README divergence table), and write preflight.md + run-plan.json with verdict GO/GO-WITH-WARNINGS/NO-GO. Has 4 ask-user stop points (SP1-SP4). Triggers: "macrosynteny preflight", "synteny preflight", "compare assemblies preflight".'
-version: 1.0.0
-updated: "2026-10-06"
+description: 'Preflight for macrosynteny analysis: validate ≥2 genome FASTA assemblies (gzipped OK; optional NCBI retrieval via the biodb-fetch dependency skill when assemblies are not local), generate samtools faidx indexes, compute Mash pairwise divergence sketch/dist matrix, derive the ntSynt -d parameter cascade (block_size/indel/merge/w_rounds from the README divergence table), and write preflight.md + run-plan.json with verdict GO/GO-WITH-WARNINGS/NO-GO. Has 5 ask-user stop points (SP1-SP5). Triggers: "macrosynteny preflight", "synteny preflight", "compare assemblies preflight".'
+version: 1.1.0
+updated: "2026-10-09"
 triggers:
   - "macrosynteny preflight"
   - "synteny preflight"
@@ -11,7 +11,7 @@ triggers:
 
 # Macrosynteny Input Preflight
 
-> **v1.0.0.** Mirrors `bettamt-preflight`: gather inputs → compute evidence → write `run-plan.json` (machine contract) + `preflight.md` (human audit). **Never** invokes the run sub-skill. `build/ntsynt-run` refuses to run without `preflight.md` ≥ `GO-WITH-WARNINGS`.
+> **v1.1.0.** Mirrors `bettamt-preflight`: gather inputs → compute evidence → write `run-plan.json` (machine contract) + `preflight.md` (human audit). **Never** invokes the run sub-skill. `build/ntsynt-run` refuses to run without `preflight.md` ≥ `GO-WITH-WARNINGS`.
 
 ## Audience
 
@@ -84,6 +84,14 @@ Auto-pick: proceed with (A) and log the warning when user is absent (batch mode)
 
 Auto-pick when: max divergence ≤ 10% and spread < 2×.
 
+### SP5 — Local FASTAs absent but accessions/taxa named
+
+| Trigger | Evidence check | Action |
+| --- | --- | --- |
+| No valid FASTAs in `$RUN_DIR` but the user named NCBI accessions / assembly names / taxa | Assemblies must be retrieved from a database — never fetched inline | Propose: "I don't see the genome FASTAs, but I see accession(s) `<X>`. Retrieve via the dependency skill **biodb-fetch** (NCBI Datasets, cached + manifest contract)? (A) yes — fetch all listed accessions (recommended), (B) I'll place the FASTAs in `$RUN_DIR/input/` myself, (C) abort. State which accessions will be fetched and confirm before the network call. |"
+
+Auto-pick when: user already said "download/it's in a database" → fetch with biodb-fetch (still announce the accessions). If biodb-fetch is not deployed: tell the user (install: clone https://github.com/cheahhl814/biodb-fetch into your agent's skills directory); NEVER fetch from NCBI inline as a workaround.
+
 ## Description
 
 This sub-skill computes 4 pieces of evidence (FASTA validity, FAI indexes, Mash distances, parameter cascade) and emits `run-plan.json` + `preflight.md`.
@@ -99,7 +107,7 @@ This sub-skill computes 4 pieces of evidence (FASTA validity, FAI indexes, Mash 
 
 | Input | Required? | Default |
 | --- | --- | --- |
-| FASTA paths (≥2, gzipped OK) | yes | — |
+| FASTA paths (≥2, gzipped OK) | yes | — (if absent but accessions named → SP5 retrieval via biodb-fetch) |
 | User-specified divergence / parameters | no | Mash-derived |
 | Visualization length threshold | no | `10000` (blocks shorter than this are dropped from links.tsv) |
 
@@ -108,6 +116,11 @@ This sub-skill computes 4 pieces of evidence (FASTA validity, FAI indexes, Mash 
 ```bash
 cd "$RUN_DIR" || exit 1
 SKILL_DATA=<path-to>/skills/macrosynteny   # skill root (docs-corpus, bin/)
+# 0) Optional retrieval (SP5): assemblies not on disk → biodb-fetch genome path
+#    python3 <skills>/biodb-fetch/scripts/ncbi_datasets.py genome \
+#        --accession <ACCESSION> --outdir "$RUN_DIR/input/"
+#    Verify manifest.tsv contract_version before consuming payloads; record manifest
+#    row paths in run-plan.json.provenance. Retrieved FASTAs flow through 2a–2e as normal.
 # 2a) Inputs: count + readability (gunzip -t for .gz)
 # 2b) FAI: samtools faidx <input> (writes <input>.fai)
 # 2c) Genome sizes: awk '{s+=$2} END {print s}' <input>.fai
@@ -138,6 +151,7 @@ Record every measurement in `preflight_evidence.txt` with the exact command used
     "-p": "ntSynt", "-t": 8
   },
   "viz": {"length_threshold": 10000, "colour_assembly": "a.fa"},
+  "provenance": {"retrieved": [{"accession": "GCF_000001405.40", "manifest_row": "input/manifest.tsv", "payload": "input/GCF_000001405.40.fna"}]},
   "verdict": "GO",
   "warnings": [],
   "generated": "<ISO8601>"
@@ -166,6 +180,9 @@ Markdown with the standard table (assembly readability, FAI success, genome size
 | `.fai` exists but 0 lines | empty/corrupt FASTA | re-check the download; `wc -c`, gzip -t |
 | divergence reported > 100 | mash dist misinterpretation — used similarity instead of divergence | use `(1 - mash_distance_score) * 100` — see Mash docs (docs-corpus/mash) |
 | assembly has thousands of contigs | fragmented input (see SP3) | warn; suggest viz-layer contig aggregation |
+| `No module named Bio` from biodb-fetch's ncbi_fetch.py | biodb-fetch's Entrez env differs from this skill's pixi env | invoke biodb-fetch scripts via ITS OWN pixi env (`pixi run --manifest-path <biodb-fetch>/pixi.toml`) — skills own their environments; do not copy BioPython into this skill |
+| biodb-fetch `manifest.tsv` missing `contract_version` | stale biodb-fetch deploy | `pixi run update-check` inside the biodb-fetch skill dir; re-deploy before proceeding |
+| duplicated downloads (same accession twice) | cache bypassed | biodb-fetch shared store dedupes — don't pass `--refresh` unless explicitly re-fetching |
 
 ## Verification
 

@@ -60,7 +60,11 @@ synteny blocks
 ntSynt
 FunMacroSynteny
 compare assemblies
+download genomes then compare assemblies
 ```
+
+> [!NOTE]
+> **Dependency skill** — [biodb-fetch](https://github.com/cheahhl814/biodb-fetch). When the assemblies are not local, the preflight phase retrieves them from NCBI (Datasets v2 genome endpoint) via biodb-fetch's cached, manifest.tsv/contract_version-gated fetch. Install it alongside this skill; the preflight tells you when it is needed.
 
 ### Manual phase execution
 
@@ -94,6 +98,8 @@ The analysis follows a phased evidence chain. Each phase consumes the artifacts 
 
 > [!TIP]
 > Read each sub-skill's `SKILL.md` for the full procedure, its ask-user stop points, and its signature library (stderr pattern → cause → fix).
+
+**Genomes not local?** Phase 1 delegates retrieval to [biodb-fetch](https://github.com/cheahhl814/biodb-fetch) (`scripts/ncbi_datasets.py genome --accession <ACCESSION>`), verifies the `contract_version` in the returned `manifest.tsv`, then treats the fetched FASTAs like any other input. Retrieved payloads are recorded in `run-plan.json` for provenance.
 
 ## 🧰 Tools
 

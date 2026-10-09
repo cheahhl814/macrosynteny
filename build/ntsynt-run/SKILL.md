@@ -1,8 +1,8 @@
 ---
 name: ntsynt-run
 description: 'Execute ntSynt (BirolLab) for macrosynteny block detection using the preflight-derived parameters in run-plan.json: divergence d, block_size, indel, merge, w_rounds, plus Bloom-filter tuning. Validates outputs (synteny_blocks.tsv non-empty, expected column count), records stderr, writes run-done.json + run-report.md with verdict. Has 2 ask-user stop points (SP1-SP2). Signature library for OOM, Snakemake failures, divergence regime errors. Triggers: "run ntsynt", "compute synteny blocks", "run macrosynteny".'
-version: 1.0.0
-updated: "2026-10-06"
+version: 1.1.0
+updated: "2026-10-09"
 triggers:
   - "run ntsynt"
   - "compute synteny blocks"
@@ -11,7 +11,7 @@ triggers:
 
 # ntSynt Run
 
-> **v1.0.0.** Mirrors `bettamt-run`: load the upstream plan → execute → verify outputs → write `run-report.md`. **Never** invokes the viz sub-skill. `viz/funmacro-viz` and `qc/macrosynteny-qc` refuse to run without the blocks TSV.
+> **v1.1.0.** Mirrors `bettamt-run`: load the upstream plan → execute → verify outputs → write `run-report.md`. **Never** invokes the viz sub-skill. `viz/funmacro-viz` and `qc/macrosynteny-qc` refuse to run without the blocks TSV.
 
 ## 0. Inputs / Outputs contract
 
