@@ -1,7 +1,7 @@
 ---
 name: macrosynteny-qc
 description: 'QC phase of macrosynteny: run the vendored de-novo synteny block statistics script (denovo_synteny_block_stats.py from BirolLab/ntSynt) over the blocks TSV + FAI files, sanity-check block counts and genome coverage against the Mash divergence, and write report/macrosynteny-report.md with verdict PASS/PASS-WITH-WARNINGS/NO-GO. Triggers: "synteny qc", "synteny block stats", "macrosynteny report".'
-version: 1.1.0
+version: 1.2.0
 updated: "2026-10-09"
 triggers:
   - "synteny qc"
@@ -11,7 +11,7 @@ triggers:
 
 # Macrosynteny QC
 
-> **v1.1.0.** Mirrors `bettamt-qc`: load run artifacts → compute stats → write the final report with a verdict. Reads `run-done.json` (+ `viz-done.json` when present); writes `report/macrosynteny-report.md`.
+> **v1.2.0.** Mirrors `bettamt-qc`: load run artifacts → compute stats → write the final report with a verdict. Reads `run-done.json` (+ `viz-done.json` when present); writes `report/macrosynteny-report.md`.
 
 ## 0. Inputs / Outputs contract
 
@@ -69,6 +69,25 @@ mkdir -p "$RUN_DIR/report"
 python3 "$STATS" -h   # flag reference; also in docs-corpus/ntsynt
 ```
 
+### 1b. (Optional) telomere-signal scaffold QC (vendored, `bin/extras/`)
+
+Scaffold-completeness context for the coverage numbers: which assemblies carry true telomeres vs truncated scaffolds. Uses `tidk telomeric` (bioconda, pinned in pixi.toml) + the vendored `telomere_to_json.py`; full schema + interpretation patterns in `bin/extras/telomere-AGENTS.md` and `docs-corpus/telomere-qc/`.
+
+```bash
+# per assembly: search the (species-appropriate) telomeric repeat in windows
+pixi run --manifest-path <skill-root>/pixi.toml \
+  tidk telomeric --search TTAGGG -o "$RUN_DIR/telomere/a" --window 10000 --extension 4 a.fa
+find "$RUN_DIR/telomere" -name '*TSV' -o -name '*tsv' | while read T; do
+  python3 "<skill-root>/bin/extras/telomere_to_json.py" "$T"
+done
+```
+
+Read the JSON `telomere_signal.{start,end}_region.enriched` flags — fold `scaffolds_with_telomere_signal / num_scaffolds` per assembly into the report's coverage interpretation ("blocks span chromosome ends in N/M assemblies" vs "truncated scaffolds inflate block-to-size ratios").
+
+### 1c. (Optional) fold the interpretation tables
+
+When `analysis/interpret-done.json` exists (run `analysis/macrosynteny-interpret` first), pull its `rearrangement_summary.tsv` + candidate counts verbatim into the report's interpretation section — thresholds stated, reference genome named.
+
 ### 2. Cross-checks (always run)
 
 ```bash
@@ -107,6 +126,9 @@ Record each check's measured value in `report/qc-verdict.json` `checks` array.
 | `KeyError: FAI` inside the stats script | FAI paths not passed for every assembly | pass all FAIs verbatim from run-plan.json |
 | stats script emits nothing on stdout | old python or import error | check `pixi run python3 --version`; consult signature library in debug sub-skill |
 | block count explodes (>> expected) | fragmented assemblies | rerun viz at a higher length threshold; note the caveat in the report |
+| `tidk: command not found` | pixi env stale (tidk added in v1.2.0) | `pixi install` re-run at the skill root |
+| telomere JSON shows 0 enriched scaffolds for a polished assembly | wrong repeat motif for the taxon (e.g. vertebrate TTAGGG vs insect TTGGGG) | re-run `tidk telomeric --search` with the correct motif; check per-taxon literature / repeat motifs in docs-corpus/telomere-qc |
+| `tidk telomeric: could not infer telomere length` | empty/minimal fixture | EXEC-SKIP telomere check for tiny fixtures (scaffolds < 50 kb lack assessable windows) |
 
 ## Verification
 

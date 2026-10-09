@@ -1,13 +1,14 @@
 [workspace]
 name = "macrosynteny"
-version = "1.1.0"
-description = "Multi-genome macrosynteny: ntSynt block detection + FunMacroSynteny interactive visualization"
+version = "1.2.0"
+description = "Multi-genome macrosynteny: ntSynt block detection + FunMacroSynteny interactive visualization + ntSynt-viz plots & rearrangement interpretation"
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "osx-64", "osx-arm64"]
 
 [dependencies]
 # Every tool here was confirmed via `pixi search` during preflight (status: found in params.json).
 "ntsynt" = "*"
+"ntsynt-viz" = "*"
 "mash" = "*"
 "samtools" = "*"
 "seqtk" = "*"
@@ -15,17 +16,20 @@ platforms = ["linux-64", "osx-64", "osx-arm64"]
 "python" = "3.12.*"
 "pandas" = "*"
 "numpy" = "*"
+"tidk" = "*"
 
 # Note: miller (mlr) was evaluated for `format_blocks_gggenomes` but clashed with
 # ntsynt + python 3.12 in the joint solve; the single sort step it served is
 # replicated by bin/viz/sort_links_mlr_compat.py instead. FunMacroSynteny is a
 # browser web app vendored under bin/funmacrosynteny/ — it is NOT a conda package.
+# tidk (v10bp telomeric repeat search) powers the OPTIONAL telomere-signal QC check.
 
 [tasks]
 # Common workflows as pixi tasks
 preflight = "echo 'Run preflight/macrosynteny-input-preflight for usage'"
 run = "echo 'Run build/ntsynt-run for usage'"
 viz = "echo 'Run viz/funmacro-viz for usage'"
+interpret = "echo 'Run analysis/macrosynteny-interpret for usage'"
 qc = "echo 'Run qc/macrosynteny-qc for usage'"
 debug = "echo 'Run debug/macrosynteny-debug for usage'"
 # Self-check: compares this skill's git SHA to upstream (github.com/cheahhl814/macrosynteny).

@@ -1,6 +1,6 @@
 # Multi-Genome Macrosynteny Analysis
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](#-installation)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)](#-installation)
 [![Type](https://img.shields.io/badge/type-agent%20skill-blueviolet)](#-installation)
 [![Built with](https://img.shields.io/badge/built%20with-bioinfo--skill--creator-orange)](https://github.com/cheahhl814/bioinfo-skill-creator)
 
@@ -9,7 +9,7 @@ Compute multi-genome macrosynteny blocks from genome assemblies with ntSynt (min
 **Repository**: https://github.com/cheahhl814/macrosynteny
 
 > [!NOTE]
-> Current version: **v1.0.0** (updated 2026-10-06).
+> Current version: **v1.2.0** (updated 2026-10-09).
 
 ## Contents
 
@@ -61,6 +61,7 @@ ntSynt
 FunMacroSynteny
 compare assemblies
 download genomes then compare assemblies
+rearrangement analysis (fusion / fission / inversion)
 ```
 
 > [!NOTE]
@@ -115,6 +116,8 @@ All tools are resolved from conda-forge/bioconda via the pinned `pixi.toml`.
 | `python` | 3.12 | glue scripts (formatting, FunMacroSynteny server) |
 | `pandas` | * | links.tsv / sequence_lengths.tsv interchange handling |
 | `numpy` | * | numeric ops in format/stats scripts |
+| `ntsynt-viz` | * | static ribbon plots + chrom-paint-feats + est-distances (interpret input) |
+| `tidk` | * | telomeric repeat search for optional scaffold-completeness QC |
 
 Tool usage is grounded in the offline `docs-corpus/` snapshots (version-matched `--help`/`man` captures, upstream repo docs, and web docs as fallback) — the agent reads these instead of guessing flags.
 
@@ -150,17 +153,23 @@ macrosynteny/
 │   ├── python/
 │   ├── pandas/
 │   ├── numpy/
-│   └── funmacrosynteny/
+│   ├── funmacrosynteny/
+│   ├── ntsynt-viz/
+│   ├── macrosynteny-analysis/
+│   └── telomere-qc/
 ├── preflight/               # Phase 1 sub-skill (input + divergence preflight)
 ├── build/                   # Phase 2 sub-skill (ntSynt execution)
 ├── viz/                     # Phase 3 sub-skill (interchange TSVs + HTML bake)
 ├── qc/                      # Phase 4 sub-skill (block statistics + report)
+├── analysis/                # Optional: 20-table rearrangement interpretation sub-skill
 ├── debug/                   # Failure interpreter (signature library)
 ├── bin/
 │   ├── skill-update-check.py  # Self-update check (pixi run update-check)
 │   ├── viz/                   # Vendored ntSynt formatting scripts (GPL-3)
 │   ├── stats/                 # Vendored de-novo block statistics script (GPL-3)
-│   └── funmacrosynteny/       # Vendored FunMacroSynteny web app (GPL-3)
+│   ├── funmacrosynteny/       # Vendored FunMacroSynteny web app (GPL-3)
+│   ├── analysis/              # Vendored 20-table rearrangement interpreter (user-provenance)
+│   └── extras/                # Vendored telomere-QC helper + schema docs (user-provenance)
 └── test-data/               # Deterministic fixtures + MANIFEST.tsv
 ```
 
@@ -170,7 +179,8 @@ macrosynteny/
 - **Docs-grounded tool usage** — tool flags come from `docs-corpus/`, never from the agent's memory.
 - **Explicit stop points** — ambiguous decisions are surfaced to you as *Evidence + Recommend + Options*, not auto-picked.
 - **Reproducible environments** — every tool is pinned in `pixi.toml` and resolved via pixi;
-- **GPL-3 vendored assets** — the FunMacroSynteny app and ntSynt helper scripts ship with their upstream `LICENSE` files and pinned upstream commits (see `params.json: vendor_assets`).
+- **GPL-3 vendored assets** — the FunMacroSynteny app and ntSynt helper scripts ship with their upstream `LICENSE` files and pinned upstream commits (see `params.json: vendor_assets`);
+- **Provenance-marked user extensions** — the rearrangement interpreter (`bin/analysis/`) and telomere-QC helper (`bin/extras/`) are user-workspace-authored, copied verbatim with header notes (optional phases, both canary-verified).
 
 ## 🚀 Nextflow runner
 

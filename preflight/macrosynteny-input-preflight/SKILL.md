@@ -1,7 +1,7 @@
 ---
 name: macrosynteny-input-preflight
 description: 'Preflight for macrosynteny analysis: validate ≥2 genome FASTA assemblies (gzipped OK; optional NCBI retrieval via the biodb-fetch dependency skill when assemblies are not local), generate samtools faidx indexes, compute Mash pairwise divergence sketch/dist matrix, derive the ntSynt -d parameter cascade (block_size/indel/merge/w_rounds from the README divergence table), and write preflight.md + run-plan.json with verdict GO/GO-WITH-WARNINGS/NO-GO. Has 5 ask-user stop points (SP1-SP5). Triggers: "macrosynteny preflight", "synteny preflight", "compare assemblies preflight".'
-version: 1.1.0
+version: 1.2.0
 updated: "2026-10-09"
 triggers:
   - "macrosynteny preflight"
@@ -11,7 +11,7 @@ triggers:
 
 # Macrosynteny Input Preflight
 
-> **v1.1.0.** Mirrors `bettamt-preflight`: gather inputs → compute evidence → write `run-plan.json` (machine contract) + `preflight.md` (human audit). **Never** invokes the run sub-skill. `build/ntsynt-run` refuses to run without `preflight.md` ≥ `GO-WITH-WARNINGS`.
+> **v1.2.0.** Mirrors `bettamt-preflight`: gather inputs → compute evidence → write `run-plan.json` (machine contract) + `preflight.md` (human audit). **Never** invokes the run sub-skill. `build/ntsynt-run` refuses to run without `preflight.md` ≥ `GO-WITH-WARNINGS`.
 
 ## Audience
 

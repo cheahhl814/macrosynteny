@@ -1,7 +1,7 @@
 ---
 name: funmacro-viz
 description: 'Visualization phase of macrosynteny: convert an ntSynt synteny_blocks.tsv into the gggenomes/FunMacroSynteny interchange TSVs (links.tsv + sequence_lengths.tsv) with the vendored ntSynt formatting scripts (FAI order = genome order), then bake a single interactive HTML via the vendored FunMacroSynteny app (macrosynteny.py). Covers genome/chromosome ordering, contig aggregation, browser serving, and the 300-DPI PNG / SVG / single-file-collaborator exports. Has 3 ask-user stop points (SP1-SP3). Triggers: "visualize synteny", "funmacro html", "render synteny blocks".'
-version: 1.1.0
+version: 1.2.0
 updated: "2026-10-09"
 triggers:
   - "visualize synteny"
@@ -11,7 +11,7 @@ triggers:
 
 # FunMacroSynteny Viz
 
-> **v1.1.0.** Converts the run's blocks TSV into `links.tsv` + `sequence_lengths.tsv`, then bakes the interactive single-file HTML. Reads `run-done.json`; writes `output/funmacrosynteny.html`.
+> **v1.2.0.** Converts the run's blocks TSV into `links.tsv` + `sequence_lengths.tsv`, then bakes the interactive single-file HTML. Reads `run-done.json`; writes `output/funmacrosynteny.html`.
 
 ## 0. Inputs / Outputs contract
 
@@ -119,6 +119,22 @@ python3 "$FM/macrosynteny.py" "$RUN_DIR/output/links.funmacro.tsv" -o "$RUN_DIR/
 
 The app loads `d3` from the CDN at view time (https://d3js.org — needs internet on first open) and the local `src/*.js` modules, which `prepare_links`/bake keep alongside the html in the same directory tree. For a **fully offline single file** (`Export Hub → Collaborator Mode`), open it in a browser once and use the app's own export — the baked `window.bakedData` TSV already travels inside the file.
 
+### 3b. (Optional, needed for `analysis/macrosynteny-interpret`) static ribbon plots + chrom-paint via ntSynt-viz
+
+ntSynt-viz (bioconda `ntsynt-viz`, pinned in pixi.toml; docs: `docs-corpus/ntsynt-viz/`) reads the SAME ntSynt blocks TSV and produces ribbon plots + chromosome-painting features + LLM-summary markdown + estimated pairwise distances. The `chrom-paint-feats.tsv` output is the input contract of the interpretation phase, so run this step whenever interpretation is planned:
+
+```bash
+(cd "$RUN_DIR/output" && pixi run --manifest-path <skill-root>/pixi.toml \
+  ntsynt_viz.py --blocks ntSynt.synteny_blocks.tsv \
+    --fais a.fa.fai b.fa.fai c.fa.fai \
+    --target-genome a.fa --normalize --prefix macrosynteny_viz )
+# outputs: <prefix>.links.tsv (gggenomes-ordered, canonical form of step 1's),
+# <prefix>.chrom-paint-feats.tsv, <prefix>.sequence_lengths.sorted.tsv,
+# ribbon-plot PNG/HTML, <prefix>_est-distances.{tsv,phylip,nwk,order.tsv}, *LLM-info.md
+```
+
+Note: when ntSynt-viz runs, its `links.tsv`/`sequence_lengths.sorted.tsv` SUPERSEDE step 1's (same schema, curated ordering); keep the file names the interpreter expects (`<prefix>.sequence_lengths.sorted.tsv`).
+
 ### 2b. FunMacroSynteny input-shape requirements (evidence: `docs-corpus/funmacrosynteny/app-notes.md`)
 
 Three facts change how raw ntSynt output is prepared — verified by reading `generate_links_tsv.py`, `macrosynteny.py`, and the upstream tests:
@@ -174,6 +190,9 @@ Optionally open it: `xdg-open "$RUN_DIR/output/funmacrosynteny.html"` (Linux) / 
 | `FileNotFoundError: ...sequence_lengths` when baking | step 1 failed with a visible error earlier in the log | fix step 1 first; baking consumes both TSVs |
 | HTML opens blank | `window.bakedData` empty because links.tsv was empty | check blocks TSV non-empty; re-run run phase if needed |
 | Blank/near-blank canvas | sequence_lengths.tsv is missing or unparsable | regenerate the TSVs |
+| `ntsynt_viz.py: unrecognized arguments` | ntSynt-viz version drift | read `docs-corpus/ntsynt-viz/cli-reference.md` (verbatim --help capture, pinned version) — never guess flags |
+| est-distance nwk/phylip missing | ntSynt-viz skipped or failed mid-run | re-run viz step 3b with `--prefix` set; check stderr for the exact failure before interpret |
+| html ribbon plot absent after ntsynt-viz | `--no-html` passed, or html-only failure | re-run without `--no-html`; fall back to FunMacroSynteny bake (steps 1–3) |
 | app renders but chromosomes unordered | expected — user drags/uses neighbor-sense auto-sort | none; SP1 covers genome order only |
 | blank viz for genomes with unsorted FAI | FAI not created on the full FASTA | re-run `samtools faidx` |
 | `python macrosynteny.py ... File template not found` | macrosynteny.html not in the same dir as macrosynteny.py | run with the vendored layout (both files in `bin/funmacrosynteny/`) |
