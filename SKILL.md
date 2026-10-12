@@ -1,8 +1,8 @@
 ---
 name: macrosynteny
 description: 'Multi-genome macrosynteny analysis: compute cross-assembly synteny blocks with ntSynt (Mash-derived divergence-aware parameters), format them into gggenomes/FunMacroSynteny interchange TSVs (links.tsv + sequence_lengths.tsv), produce an interactive single-file HTML visualization, and QC the blocks with de-novo block statistics. Handles whole-genome FASTA assemblies (2-10+ genomes). Version-aware stage routing with explicit Go/No-Go gates and signature-library debugging. Triggers: "macrosynteny", "synteny blocks", "ntSynt", "FunMacroSynteny", "compare assemblies".'
-version: 1.3.0
-updated: "2026-10-09"
+version: 1.3.1
+updated: "2026-10-12"
 triggers:
   - "macrosynteny"
   - "synteny blocks"
@@ -227,4 +227,4 @@ After routing, state exactly which sub-skill was invoked and which file it will 
 
 ## Provenance
 
-Built with the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill. Pattern adopted from [BettaMt-agents](https://github.com/cheahhl814/BettaMt-agents). Wraps [BirolLab/ntSynt](https://github.com/BirolLab/ntSynt) (GPL-3) and [ZarulHanifah/FunMacroSynteny](https://github.com/ZarulHanifah/FunMacroSynteny) (GPL-3).
+Built with the [skill-forge](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill. Pattern adopted from [BettaMt-agents](https://github.com/cheahhl814/BettaMt-agents). Wraps [BirolLab/ntSynt](https://github.com/BirolLab/ntSynt) (GPL-3) and [ZarulHanifah/FunMacroSynteny](https://github.com/ZarulHanifah/FunMacroSynteny) (GPL-3).
