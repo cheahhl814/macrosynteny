@@ -7,6 +7,7 @@ triggers:
   - "macrosynteny failed"
   - "ntSynt error"
   - "debug synteny"
+disable-model-invocation: true
 ---
 
 # Macrosynteny Debug

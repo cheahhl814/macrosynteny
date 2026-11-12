@@ -7,6 +7,7 @@ triggers:
   - "interpret synteny blocks"
   - "fusion fission analysis"
   - "rearrangement analysis"
+disable-model-invocation: true
 ---
 
 # Macrosynteny Interpret

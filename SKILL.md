@@ -11,6 +11,7 @@ triggers:
   - "compare assemblies"
   - "structural genomics"
   - "links.tsv"
+disable-model-invocation: true
 ---
 
 # Multi-Genome Macrosynteny Analysis

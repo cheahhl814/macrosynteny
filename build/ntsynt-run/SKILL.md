@@ -7,6 +7,7 @@ triggers:
   - "run ntsynt"
   - "compute synteny blocks"
   - "run macrosynteny"
+disable-model-invocation: true
 ---
 
 # ntSynt Run

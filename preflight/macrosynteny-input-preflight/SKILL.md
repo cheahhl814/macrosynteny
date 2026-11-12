@@ -7,6 +7,7 @@ triggers:
   - "macrosynteny preflight"
   - "synteny preflight"
   - "compare assemblies preflight"
+disable-model-invocation: true
 ---
 
 # Macrosynteny Input Preflight

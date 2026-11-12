@@ -7,6 +7,7 @@ triggers:
   - "visualize synteny"
   - "funmacro html"
   - "render synteny blocks"
+disable-model-invocation: true
 ---
 
 # FunMacroSynteny Viz

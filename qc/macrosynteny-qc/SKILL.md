@@ -7,6 +7,7 @@ triggers:
   - "synteny qc"
   - "synteny block stats"
   - "macrosynteny report"
+disable-model-invocation: true
 ---
 
 # Macrosynteny QC
