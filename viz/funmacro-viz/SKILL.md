@@ -33,6 +33,7 @@ disable-model-invocation: true
 | `$RUN_DIR/output/sequence_lengths.tsv` | this skill | TSV (4 cols) | Chromosome lengths + relative_orientation |
 | `$RUN_DIR/output/funmacrosynteny.html` | this skill | HTML | Single-file interactive viz |
 | `$RUN_DIR/output/viz-done.json` | this skill | JSON | Gate for qc |
+| `$RUN_DIR/output/ribbons.svg` | this skill (optional, §3c) | SVG | Static ribbon figure; never required by qc |
 
 ### Verdict gate
 
@@ -135,6 +136,26 @@ ntSynt-viz (bioconda `ntsynt-viz`, pinned in pixi.toml; docs: `docs-corpus/ntsyn
 ```
 
 Note: when ntSynt-viz runs, its `links.tsv`/`sequence_lengths.sorted.tsv` SUPERSEDE step 1's (same schema, curated ordering); keep the file names the interpreter expects (`<prefix>.sequence_lengths.sorted.tsv`).
+
+### 3c. (Optional) static ribbon figure for reports/slides (`bin/ribbons/plot_ribbons.py`)
+
+FunMacroSynteny is interactive but browser-bound; ntSynt-viz draws ribbons in genome order. For a curated, reference-chromosome-focused static SVG (for reports, slides, or the report's figure panel) use the vendored user-provenance script:
+
+```bash
+pixi run --manifest-path <skill-root>/pixi.toml python3 <skill-root>/bin/ribbons/plot_ribbons.py \
+  --blocks output/ntSynt.synteny_blocks.tsv \
+  --fai a.fa.fai b.fa.fai c.fa.fai \
+  --refs <ref-chrom-1>,<ref-chrom-2> \
+  [--telomere-dir "$RUN_DIR/telomere"] \
+  [--centromeres b="$RUN_DIR/results/centromere/centromere_summary.tsv"] \
+  --title "<figure title>" --out output/ribbons.svg [--self-check]
+```
+
+- `--refs` selects (and orders) the reference chromosomes to draw; the **first `--fai` is the reference**; row order = FAI order unless `--rows` is given.
+- `--telomere-dir` draws dark end-caps from tidk `tidk ends` output (`<genome-stem>*_ends.ends.tsv`; enriched = `present`/`wrong_strand`), reusing the qc phase's `$RUN_DIR/telomere/` directory.
+- `--centromeres GENOME=PATH` (repeatable) draws translucent centromere-candidate bands; accepts centromere-prediction outputs — `centromere_summary.tsv` (`scaffold start end n_repeats`), `regions/candidate_regions.tsv` (`scaffold start end`), or `satellite_main_blocks.tsv` — columns are auto-detected. This is the soft link to the centromere-prediction skill; it is optional and read-only.
+- `--self-check` re-verifies bar geometry against the FAIs and parses the SVG (non-zero exit on mismatch).
+- Not a replacement for FunMacroSynteny; produces no artifacts qc depends on. Requires only the blocks TSV + FAIs (+ optional tidk/centromere inputs).
 
 ### 2b. FunMacroSynteny input-shape requirements (evidence: `docs-corpus/funmacrosynteny/app-notes.md`)
 

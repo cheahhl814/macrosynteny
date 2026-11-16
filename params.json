@@ -118,6 +118,27 @@
       "vendored_at": "bin/analysis/analyze_macrosynteny.py"
     },
     {
+      "name": "telomere_adjudication.py (user-provenance, adapted)",
+      "source": "user's Betta macrosynteny workspace (claude_workspace) -> parameterized (--run-dir/--telomere-dir) for the skill",
+      "license": "GPL-3.0 (skill-consistent)",
+      "role": "deterministic fusion/fission telomere adjudication for the interpret phase (bin/analysis/telomere_adjudication.py)",
+      "vendored_at": "bin/analysis/telomere_adjudication.py"
+    },
+    {
+      "name": "centromere_overlap.py (user-provenance, new)",
+      "source": "written for the skill (soft contract with the centromere-prediction skill)",
+      "license": "GPL-3.0 (skill-consistent)",
+      "role": "centromere-candidate overlap at fusion junctions (target frame) and fission gaps (reference frame); feeds the interpret phase",
+      "vendored_at": "bin/analysis/centromere_overlap.py"
+    },
+    {
+      "name": "plot_ribbons.py (user-provenance, adapted)",
+      "source": "user's Betta macrosynteny workspace (claude_workspace) -> de-hardcoded and parameterized for the skill",
+      "license": "GPL-3.0 (skill-consistent)",
+      "role": "static SVG synteny ribbon figure (reference-chromosome-centric); optional tidk telomere end-caps and centromere-candidate bands from centromere-prediction TSVs",
+      "vendored_at": "bin/ribbons/plot_ribbons.py"
+    },
+    {
       "name": "telomere module (user-provenance)",
       "source": "user's Betta macrosynteny workspace (claude_workspace, emailing_Indonesian_group)",
       "license": "GPL-3.0 (skill-consistent)",

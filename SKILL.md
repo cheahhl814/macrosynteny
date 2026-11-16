@@ -86,7 +86,7 @@ Auto-pick `preflight` when FASTAs are in the work dir or were named in the promp
 | `preflight` | Invoke `preflight/macrosynteny-input-preflight`. Validates FASTAs (retrieving them via bio db fetch if absent — §0.3b), indexes them (`samtools faidx`), computes Mash distances, picks the `-d` parameter cascade, writes `preflight.md` + `run-plan.json`. |
 | `run` | Invoke `build/ntsynt-run`. Executes ntSynt with the preflight-derived parameters. Writes `output/ntSynt.synteny_blocks.tsv`. |
 | `viz` | Invoke `viz/funmacro-viz`. Converts blocks → `links.tsv` + `sequence_lengths.tsv` → single-file interactive HTML via the vendored FunMacroSynteny app. Writes `output/funmacrosynteny.html`. |
-| `analysis` | Invoke `analysis/macrosynteny-interpret`. 20-table rearrangement interpretation + COMPULSORY telomere adjudication of fusion/fission candidates (needs the ntSynt-viz path + the qc telomere evidence). |
+| `analysis` | Invoke `analysis/macrosynteny-interpret`. 20-table rearrangement interpretation + COMPULSORY telomere adjudication of fusion/fission candidates (needs the ntSynt-viz path + the qc telomere evidence); optional centromere-overlap check (centric vs interstitial candidates) via `bin/analysis/centromere_overlap.py`. |
 | `qc` | Invoke `qc/macrosynteny-qc`. Runs de-novo block statistics, COMPULSORY telomere evidence (`tidk ends` + `tidk search`), and sanity checks. Writes `report/macrosynteny-report.md`. |
 | `qc-done` | Surface `$RUN_DIR/report/macrosynteny-report.md` to the user. |
 | Any failure | Invoke `debug/macrosynteny-debug` with the failing command's stderr. |
@@ -214,6 +214,7 @@ The agent must stop and warn the user if:
 | "Use a different genome order" | Re-run viz with FAIs in the preferred order (FAI order = genome order) |
 | "Blocks look too few/fragmented" | Re-check `-d`/`--merge`/`--w_rounds` derivation in preflight; consult `docs-corpus/ntsynt/` parameter table |
 | "Export for a collaborator" | In the FunMacroSynteny HTML: Export Hub → single-file `.html` (no server needed) |
+| "Static ribbon figure for the report" | `bin/ribbons/plot_ribbons.py` (optional; tidk telomere caps + centromere-prediction bands; see `viz/funmacro-viz` §3c) |
 
 ## Verification
 

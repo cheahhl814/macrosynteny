@@ -165,15 +165,16 @@ macrosynteny/
 ├── build/                   # Phase 2 sub-skill (ntSynt execution)
 ├── viz/                     # Phase 3 sub-skill (interchange TSVs + HTML bake)
 ├── qc/                      # Phase 4 sub-skill (block statistics + report)
-├── analysis/                # Optional: 20-table rearrangement interpretation sub-skill
+├── analysis/                # Optional: 20-table rearrangement interpretation sub-skill (+ telomere adjudication, centromere-overlap check)
 ├── debug/                   # Failure interpreter (signature library)
 ├── bin/
 │   ├── skill-update-check.py  # Self-update check (pixi run update-check)
 │   ├── viz/                   # Vendored ntSynt formatting scripts (GPL-3)
 │   ├── stats/                 # Vendored de-novo block statistics script (GPL-3)
 │   ├── funmacrosynteny/       # Vendored FunMacroSynteny web app (GPL-3)
-│   ├── analysis/              # Vendored 20-table rearrangement interpreter (user-provenance)
-│   └── extras/                # Vendored telomere-QC helper + schema docs (user-provenance)
+│   ├── analysis/              # Vendored 20-table rearrangement interpreter + telomere adjudication + centromere overlap (user-provenance)
+│   ├── extras/                # Vendored telomere-QC helper + schema docs (user-provenance)
+│   └── ribbons/               # Static SVG ribbon figure (user-provenance; tidk caps + centromere bands)
 └── test-data/               # Deterministic fixtures + MANIFEST.tsv
 ```
 
@@ -184,7 +185,7 @@ macrosynteny/
 - **Explicit stop points** — ambiguous decisions are surfaced to you as *Evidence + Recommend + Options*, not auto-picked.
 - **Reproducible environments** — every tool is pinned in `pixi.toml` and resolved via pixi;
 - **GPL-3 vendored assets** — the FunMacroSynteny app and ntSynt helper scripts ship with their upstream `LICENSE` files and pinned upstream commits (see `params.json: vendor_assets`);
-- **Provenance-marked user extensions** — the rearrangement interpreter (`bin/analysis/`) and telomere-QC helper (`bin/extras/`) are user-workspace-authored, copied verbatim with header notes (optional phases, both canary-verified).
+- **Provenance-marked user extensions** — the rearrangement interpreter, telomere adjudication and centromere-overlap check (`bin/analysis/`), telomere-QC helper (`bin/extras/`) and ribbon figure tool (`bin/ribbons/`) are user-workspace-authored, copied or adapted with header notes (optional phases, canary-verified).
 
 ## 🚀 Nextflow runner
 

@@ -33,6 +33,8 @@ disable-model-invocation: true
 | --- | --- | --- | --- |
 | `$RUN_DIR/analysis/*.tsv` | this skill | TSV (20 tables) | fusion/fission/inversion/translocation candidates, reference_chromosome_fate, target_contig_origin, orientation patterns/summary, block_completeness, per_species_block_span_summary, indel_missingness_summary, rearrangement_profile/summary, reference_to_target_correspondence(.long), synteny_block_status_table, normalized_block_genome_table, analysis_metadata |
 | `$RUN_DIR/analysis/interpret-done.json` | this skill | JSON | Gate for qc (interpret summary folds into the report) |
+| `$RUN_DIR/analysis/telomere_adjudication.tsv` | this skill (§3) | TSV | Per fusion/fission candidate: `real` / `fragmentation` / `inconclusive` + evidence |
+| `$RUN_DIR/analysis/centromere_overlap.tsv` | this skill (§3b, optional) | TSV | Centric vs interstitial flag per fusion junction / fission gap (needs `--centromeres` files) |
 
 ### Verdict gate
 
@@ -101,7 +103,18 @@ Telomere-present definition (canary-verified, tidk 0.3.0): `tidk ends` status `p
 
 Prerequisite: the qc phase's telomere evidence — `tidk ends` T2T status + `tidk search` per-window counts summarized by `bin/extras/telomere_to_json.py`, for every assembly. If the qc phase ran telomere-inconclusive, the adjudication marks every candidate `inconclusive` (never silently drops them).
 
-Adjudication table:
+Run the deterministic adjudicator (do **not** improvise the table by hand):
+
+```bash
+pixi run --manifest-path <skill-root>/pixi.toml python3 \
+  <skill-root>/bin/analysis/telomere_adjudication.py --run-dir "$RUN_DIR"
+# defaults: --analysis-dir $RUN_DIR/analysis --telomere-dir $RUN_DIR/telomere
+#           --min-len 50000 --junction-max 100 (telomeric repeats inside the junction gap)
+```
+
+It reads `candidate_fusions/fissions.tsv` + `normalized_block_genome_table.tsv`, finds the tidk files per genome (`<stem>*_ends.ends.tsv`, `<stem>*telomeric_repeat_windows.tsv` in the telomere dir; stem = FASTA name minus extensions), and writes `$RUN_DIR/analysis/telomere_adjudication.tsv`. Missing tidk evidence for a genome marks its candidates `inconclusive` (never scored real/fragmentation). Junctions without search-window evidence (ends present but no windows file) are also `inconclusive`, not `real`.
+
+Adjudication table (what the script implements — use it to interpret the output):
 
 | Candidate (from the tables) | Evidence check (telomere) | Real event | Fragmentation artifact |
 | --- | --- | --- | --- |
@@ -111,9 +124,27 @@ Adjudication table:
 
 Write `$RUN_DIR/analysis/telomere_adjudication.tsv` — columns: `candidate_table, candidate_id, target_or_reference, telomere_verdict (real / fragmentation / inconclusive), evidence (ends-enriched flags + junction window counts)`. Short scaffolds (< 50 kb, no assessable windows) stay `inconclusive` — never counted as fragmenting an event.
 
+### 3b. (Optional) Centromere-overlap check — centric vs interstitial candidates
+
+When centromere candidates exist for any compared genome (from the **centromere-prediction** skill — `centromere_summary.tsv`, `regions/candidate_regions.tsv`, or `satellite_main_blocks.tsv`; columns auto-detected), run:
+
+```bash
+pixi run --manifest-path <skill-root>/pixi.toml python3 \
+  <skill-root>/bin/analysis/centromere_overlap.py --run-dir "$RUN_DIR" \
+  --centromeres <genome>=<path/to/centromere_summary.tsv>   # repeatable, one per genome
+# --reference-genome <bin_id> overrides the reference taken from analysis_metadata.tsv
+```
+
+Writes `$RUN_DIR/analysis/centromere_overlap.tsv` with two kinds of rows:
+
+- `fusion_junction` — the interval between the two reference chromosomes joined on a target contig (frame=target). Overlap with a **centromere candidate on that target contig** supports a Robertsonian-type (centric) fusion; no overlap ⇒ interstitial fusion (or one far from any predicted centromere).
+- `fission_gap` — the reference-coordinate gap between the two fragments of a split reference chromosome (frame=reference). Overlap with a **centromere candidate on the reference chromosome** supports fission at the centromere.
+
+`centromere_overlap` is `yes` / `no` / `na` — `na` means no centromere file was supplied for that genome (never read `na` as "no"). Interpretation: report centric vs interstitial counts alongside the telomere adjudication; centromere overlap is *supportive* evidence for a centric event, never proof on its own (centromere proximity is necessary, not sufficient). Does not gate the phase.
+
 ### 4. Write outputs
 
-`interpret-done.json`: `{"tables": [...], "telomere_adjudication": {"n_fusions_confirmed": n, "n_fissions_confirmed": n, "n_suppressed_as_fragmentation": n, "n_inconclusive": n}, "reference_genome": ..., "genome_order": [...], "thresholds": {fusion_min_span_bp, fusion_min_fraction, translocation_min_span_bp}, "verdict": "PASS", "warnings": []}`.
+`interpret-done.json`: `{"tables": [...], "telomere_adjudication": {"n_fusions_confirmed": n, "n_fissions_confirmed": n, "n_suppressed_as_fragmentation": n, "n_inconclusive": n}, "centromere_overlap": {"fusion_junctions_centric": n, "fission_gaps_centric": n} (omit when §3b not run), "reference_genome": ..., "genome_order": [...], "thresholds": {fusion_min_span_bp, fusion_min_fraction, translocation_min_span_bp}, "verdict": "PASS", "warnings": []}`.
 
 Then hand the summary tables + adjudication counts to qc — they go verbatim into `report/macrosynteny-report.md`'s interpretation section with one sentence per headline number, always pairing the raw candidate count with the telomere-confirmed count.
 
@@ -127,6 +158,9 @@ Then hand the summary tables + adjudication counts to qc — they go verbatim in
 
 | Signature in stderr / log | Likely cause | Suggested fix |
 | --- | --- | --- |
+| `telomere_adjudication.py: required input missing` | interpreter phase not run yet, or `--run-dir` wrong | run §1 first; check `--analysis-dir`/`--telomere-dir` (default `$RUN_DIR/analysis`, `$RUN_DIR/telomere`) |
+| `centromere_overlap.py: ... no matching --centromeres genome` | `--centromeres` key doesn't match a `bin_id` in `normalized_block_genome_table.tsv` | use the genome's `bin_id` (FASTA basename), e.g. `--centromeres Betta_splendens_genome.fna=...` |
+| `centromere_overlap=na` for all rows | no `--centromeres` passed, or reference missing for fission rows | pass one `--centromeres` per genome with data; `--reference-genome` if `analysis_metadata.tsv` absent |
 | `links.tsv does not describe a simple linear genome order` | formatter emitted non-consecutive genome pairs, or FunMacroSynteny-shaped file was fed by mistake | feed the **raw gggenomes-ordered** links.tsv; for ≥3 genomes verify the formatter's consecutive-pair chain; never feed `links.funmacro.tsv` |
 | `Required input file not found: ...chrom-paint-feats.tsv` | ntSynt-viz path was skipped in viz | re-run viz with ntSynt-viz (step 4) — the interpreter cannot run without the paint features |
 | `Normalized table is not one row per block per genome` | duplicated (block_id, genome) entries in links | re-run the block detection (run phase); do not deduplicate silently |
